@@ -1,2 +1,2 @@
-# tennis-cup26
+# TennisCUP26
 Gestione Tornei di Tennis
