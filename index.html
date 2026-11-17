@@ -28,14 +28,15 @@
                     },
                     colors: {
                         tennis: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            200: '#bae6fd',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            800: '#075985',
-                            900: '#0c4a6e',
+                            50: 'var(--tennis-50, #f0f9ff)',
+                            100: 'var(--tennis-100, #e0f2fe)',
+                            200: 'var(--tennis-200, #bae6fd)',
+                            400: 'var(--tennis-400, #38bdf8)',
+                            500: 'var(--tennis-500, #0ea5e9)',
+                            600: 'var(--tennis-600, #0284c7)',
+                            700: 'var(--tennis-700, #0369a1)',
+                            800: 'var(--tennis-800, #075985)',
+                            900: 'var(--tennis-900, #0c4a6e)',
                         },
                         clay: {
                             500: '#d97706',
@@ -48,6 +49,17 @@
         }
     </script>
     <style>
+        :root {
+            --tennis-50: #f0f9ff;
+            --tennis-100: #e0f2fe;
+            --tennis-200: #bae6fd;
+            --tennis-400: #38bdf8;
+            --tennis-500: #0ea5e9;
+            --tennis-600: #0284c7;
+            --tennis-700: #0369a1;
+            --tennis-800: #075985;
+            --tennis-900: #0c4a6e;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f1f5f9;
@@ -101,20 +113,9 @@
         <header class="bg-gradient-to-r from-tennis-900 via-tennis-800 to-tennis-700 text-white px-4 py-3.5 shadow-md sticky top-0 z-30">
             <div class="flex justify-between items-center gap-2">
                 <div class="flex items-center space-x-2.5 min-w-0">
-                    <!-- Logo Tennis Cup Pro -->
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-blue-800 to-slate-900 border border-blue-400/40 shadow-md flex items-center justify-center shrink-0 relative overflow-hidden">
-                        <svg viewBox="0 0 64 64" class="w-8 h-8">
-                            <path d="M24 9 H40 L37 18 H27 Z" fill="#facc15"/>
-                            <rect x="30.5" y="18" width="3" height="4" fill="#facc15"/>
-                            <rect x="27" y="21.5" width="10" height="2" rx="1" fill="#facc15"/>
-                            <path d="M16 48 Q9 36 14 23" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M48 48 Q55 36 50 23" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
-                            <path d="M17 34 Q32 38 47 34 L45 45 Q32 48 19 45 Z" fill="none" stroke="#f8fafc" stroke-width="1.6"/>
-                            <path d="M29 50 Q26 35 39 25" fill="none" stroke="#bef264" stroke-width="2.5" stroke-linecap="round"/>
-                            <circle cx="42" cy="23" r="8" fill="#bef264" stroke="#65a30d" stroke-width="1"/>
-                            <path d="M36 18 Q40 23 36 28" fill="none" stroke="#ffffff" stroke-width="1.2"/>
-                            <path d="M48 18 Q44 23 48 28" fill="none" stroke="#ffffff" stroke-width="1.2"/>
-                        </svg>
+                    <!-- Dynamic App Logo Container -->
+                    <div id="header-app-logo" class="w-10 h-10 rounded-xl bg-gradient-to-br from-lime-400 via-emerald-500 to-sky-600 border-2 border-white/80 shadow-md flex items-center justify-center shrink-0 relative overflow-hidden">
+                        <!-- Default / Custom Logo rendered via JS -->
                     </div>
                     <div class="min-w-0">
                         <h1 id="app-title" class="font-extrabold text-sm tracking-tight leading-tight truncate">Open Tennis Cup 2026</h1>
@@ -267,9 +268,6 @@
                                     <i id="pwd-eye-icon" class="fa-solid fa-eye text-xs"></i>
                                 </button>
                             </div>
-                            <p id="password-hint-text" class="text-[11px] text-slate-500 mt-1.5 bg-amber-50 text-amber-800 px-2.5 py-1.5 rounded-lg border border-amber-200/80">
-                                <i class="fa-solid fa-circle-info mr-1"></i> Password predefinita: <strong id="default-pwd-display">edit123</strong>
-                            </p>
                         </div>
 
                         <div id="login-error-msg" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold p-2.5 rounded-xl flex items-center space-x-2">
@@ -282,11 +280,6 @@
                             <span>Conferma e Accedi</span>
                         </button>
                     </form>
-                </div>
-
-                <!-- Demo Credentials Quick Info Footer -->
-                <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400 flex justify-between items-center">
-                    <span>Demo PWD: Editore (<code>edit123</code>) • Admin (<code>admin123</code>)</span>
                 </div>
             </div>
         </div>
@@ -325,44 +318,90 @@
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Punteggio Set (es. 6-4 6-3 oppure 6-4 4-6 10-8)</label>
-                        <input type="text" id="match-score-string" placeholder="es. 6-4 6-3" class="w-full text-xs font-semibold p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Punteggio Completo (es. 6-4 3-6 10-7)</label>
+                        <input type="text" id="match-score-string" placeholder="6-4 6-3" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+                    <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label id="label-p1-sets" class="block text-[11px] font-bold text-slate-700 mb-1 truncate">Set Vinti G1</label>
-                            <input type="number" min="0" max="3" id="match-p1-sets" class="w-full text-center text-sm font-extrabold p-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-tennis-500" placeholder="0">
+                            <label id="label-p1-sets" class="block text-[11px] font-bold text-slate-700 mb-1 truncate">Set Giocatore 1</label>
+                            <input type="number" id="match-p1-sets" min="0" max="3" value="0" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
                         </div>
                         <div>
-                            <label id="label-p2-sets" class="block text-[11px] font-bold text-slate-700 mb-1 truncate">Set Vinti G2</label>
-                            <input type="number" min="0" max="3" id="match-p2-sets" class="w-full text-center text-sm font-extrabold p-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-tennis-500" placeholder="0">
+                            <label id="label-p2-sets" class="block text-[11px] font-bold text-slate-700 mb-1 truncate">Set Giocatore 2</label>
+                            <input type="number" id="match-p2-sets" min="0" max="3" value="0" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
                         </div>
                     </div>
 
-                    <div class="flex items-center space-x-2.5 bg-tennis-50/70 p-3 rounded-xl border border-tennis-200/60">
-                        <input type="checkbox" id="match-played" class="rounded text-tennis-600 focus:ring-tennis-500 w-4 h-4">
-                        <label for="match-played" class="text-xs font-bold text-tennis-900">Incontro concluso (aggiorna classifica/tabellone)</label>
+                    <div class="flex items-center space-x-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <input type="checkbox" id="match-played" class="w-4 h-4 text-tennis-600 rounded focus:ring-tennis-500">
+                        <label for="match-played" class="text-xs font-bold text-slate-700">Partita conclusa (aggiorna classifica)</label>
                     </div>
 
-                    <div class="flex space-x-2.5 pt-2">
-                        <button type="button" onclick="closeMatchModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-3 rounded-xl transition">Annulla</button>
-                        <button type="submit" class="flex-1 bg-tennis-600 hover:bg-tennis-700 text-white text-xs font-bold py-3 rounded-xl shadow-md transition">Salva Risultato</button>
-                    </div>
+                    <button type="submit" class="w-full bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs py-3 rounded-xl shadow-md transition">
+                        Salva Risultato
+                    </button>
                 </form>
             </div>
         </div>
-
     </div>
 
-    <!-- Application Logic Script -->
     <script>
-        // Default Application State with Passwords & Demo Tournament
+        // Preset SVG Logos (Encoded Data URIs)
+        const PRESET_LOGOS = {
+            rackets: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#84cc16"/><stop offset="50%" stop-color="#10b981"/><stop offset="100%" stop-color="#0284c7"/></linearGradient></defs><rect width="200" height="200" rx="44" fill="url(#bg)"/><g stroke="#ffffff" stroke-width="6" fill="none" stroke-linecap="round"><ellipse cx="75" cy="75" rx="28" ry="38" transform="rotate(-45 75 75)"/><line x1="95" y1="95" x2="145" y2="145" stroke-width="10"/><ellipse cx="125" cy="75" rx="28" ry="38" transform="rotate(45 125 75)"/><line x1="105" y1="95" x2="55" y2="145" stroke-width="10"/></g><circle cx="100" cy="105" r="18" fill="#d9f99d" stroke="#ffffff" stroke-width="3"/></svg>`),
+            trophy: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs><rect width="200" height="200" rx="44" fill="url(#bg2)"/><path d="M65 55h70v35c0 22-15 38-35 38s-35-16-35-38V55z" fill="#fbbf24"/><path d="M65 68H48c0 20 10 30 22 32M135 68h17c0 20-10 30-22 32" stroke="#fbbf24" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="92" y="125" width="16" height="24" fill="#fbbf24"/><rect x="72" y="148" width="56" height="10" rx="5" fill="#f59e0b"/><circle cx="132" cy="72" r="16" fill="#bef264" stroke="#ffffff" stroke-width="2.5"/></svg>`)
+        };
+
+        // Preset Theme Palettes
+        const THEME_PALETTES = {
+            sky: {
+                name: 'Celeste (Predefinito)',
+                50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd',
+                400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7',
+                700: '#0369a1', 800: '#075985', 900: '#0c4a6e'
+            },
+            emerald: {
+                name: 'Verde Campo',
+                50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0',
+                400: '#34d399', 500: '#10b981', 600: '#059669',
+                700: '#047857', 800: '#065f46', 900: '#064e3b'
+            },
+            clay: {
+                name: 'Terra Rossa',
+                50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa',
+                400: '#fb923c', 500: '#f97316', 600: '#ea580c',
+                700: '#c2410c', 800: '#9a3412', 900: '#7c2d12'
+            },
+            indigo: {
+                name: 'Blu Notte',
+                50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe',
+                400: '#818cf8', 500: '#6366f1', 600: '#4f46e5',
+                700: '#4338ca', 800: '#3730a3', 900: '#312e81'
+            },
+            purple: {
+                name: 'Viola Slam',
+                50: '#faf5ff', 100: '#f3e8ff', 200: '#e9d5ff',
+                400: '#c084fc', 500: '#a855f7', 600: '#9333ea',
+                700: '#7e22ce', 800: '#6b21a8', 900: '#581c87'
+            },
+            rose: {
+                name: 'Rosso Rubino',
+                50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3',
+                400: '#fb7185', 500: '#f43f5e', 600: '#e11d48',
+                700: '#be123c', 800: '#9f1239', 900: '#881337'
+            }
+        };
+
+        // Default Application State with Passwords, Custom Logo & Demo Tournament
         const DEFAULT_STATE = {
             currentUserRole: 'visualizzatore',
             viewerSelectedPlayer: '',
             activeTab: 'gironi',
             tournamentName: 'Open Tennis Cup 2026',
+            customLogo: PRESET_LOGOS.rackets,
+            themeKey: 'sky',
+            customThemeHex: '#0284c7',
             passwords: {
                 editore: 'edit123',
                 amministratore: 'admin123'
@@ -412,21 +451,116 @@
         let appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
         let pendingLoginRole = null;
 
+        // Generate a full 50-900 tonal scale from a single hex color
+        function buildPaletteFromHex(hex) {
+            const cleanHex = hex.replace('#', '');
+            const r = parseInt(cleanHex.substring(0, 2), 16) || 2;
+            const g = parseInt(cleanHex.substring(2, 4), 16) || 132;
+            const b = parseInt(cleanHex.substring(4, 6), 16) || 199;
+
+            const mix = (c, target, weight) => Math.round(c + (target - c) * weight);
+            const toHex = (nr, ng, nb) =>
+                '#' + [nr, ng, nb].map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('');
+
+            return {
+                50: toHex(mix(r, 255, 0.92), mix(g, 255, 0.92), mix(b, 255, 0.92)),
+                100: toHex(mix(r, 255, 0.84), mix(g, 255, 0.84), mix(b, 255, 0.84)),
+                200: toHex(mix(r, 255, 0.68), mix(g, 255, 0.68), mix(b, 255, 0.68)),
+                400: toHex(mix(r, 255, 0.25), mix(g, 255, 0.25), mix(b, 255, 0.25)),
+                500: toHex(mix(r, 255, 0.10), mix(g, 255, 0.10), mix(b, 255, 0.10)),
+                600: `#${cleanHex}`,
+                700: toHex(mix(r, 0, 0.18), mix(g, 0, 0.18), mix(b, 0, 0.18)),
+                800: toHex(mix(r, 0, 0.34), mix(g, 0, 0.34), mix(b, 0, 0.34)),
+                900: toHex(mix(r, 0, 0.50), mix(g, 0, 0.50), mix(b, 0, 0.50))
+            };
+        }
+
+        // Apply active theme palette to CSS variables & browser meta theme-color
+        function applyAppTheme() {
+            const palette = (appState.themeKey === 'custom' && appState.customThemeHex)
+                ? buildPaletteFromHex(appState.customThemeHex)
+                : (THEME_PALETTES[appState.themeKey] || THEME_PALETTES.sky);
+
+            const root = document.documentElement;
+            [50, 100, 200, 400, 500, 600, 700, 800, 900].forEach(shade => {
+                root.style.setProperty(`--tennis-${shade}`, palette[shade]);
+            });
+
+            const metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (metaTheme) metaTheme.setAttribute('content', palette[700]);
+        }
+
+        function setPresetTheme(key) {
+            if (appState.currentUserRole !== 'amministratore') {
+                showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
+                return;
+            }
+            if (THEME_PALETTES[key]) {
+                appState.themeKey = key;
+                appState.customThemeHex = THEME_PALETTES[key][600];
+                saveToStorage();
+                applyAppTheme();
+                initPWA();
+                renderApp();
+                showToast(`Tonalità "${THEME_PALETTES[key].name}" applicata!`, 'success');
+            }
+        }
+
+        function setCustomThemeColor(hexValue) {
+            if (appState.currentUserRole !== 'amministratore') {
+                showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
+                return;
+            }
+            appState.themeKey = 'custom';
+            appState.customThemeHex = hexValue;
+            saveToStorage();
+            applyAppTheme();
+            initPWA();
+            renderApp();
+            showToast('Colore personalizzato applicato a tutta l\'interfaccia!', 'success');
+        }
+
+        // Apply active logo across Header, Favicon, Apple Touch Icon & PWA Manifest
+        function applyAppLogoToAllParts() {
+            const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
+
+            // 1. Header Top-Left Badge
+            const headerLogoEl = document.getElementById('header-app-logo');
+            if (headerLogoEl) {
+                headerLogoEl.innerHTML = `<img src="${activeLogo}" alt="Logo Torneo" class="w-full h-full object-cover">`;
+            }
+
+            // 2. Browser Favicon & iOS Home Screen Icon
+            const appleTouch = document.getElementById('apple-touch-icon');
+            if (appleTouch) appleTouch.setAttribute('href', activeLogo);
+            const favicon = document.getElementById('favicon-link');
+            if (favicon) favicon.setAttribute('href', activeLogo);
+
+            // 3. Dynamic PWA Web App Manifest
+            initPWA();
+        }
+
         // Initialize PWA manifest
         function initPWA() {
             try {
+                const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
+                const iconType = activeLogo.startsWith('data:image/svg+xml') ? 'image/svg+xml' : 'image/png';
+                const palette = (appState.themeKey === 'custom' && appState.customThemeHex)
+                    ? buildPaletteFromHex(appState.customThemeHex)
+                    : (THEME_PALETTES[appState.themeKey] || THEME_PALETTES.sky);
                 const manifest = {
                     name: appState.tournamentName || "Tennis Cup Pro",
                     short_name: "TennisCup",
                     start_url: "./",
                     display: "standalone",
                     background_color: "#f1f5f9",
-                    theme_color: "#0369a1",
+                    theme_color: palette[700],
                     icons: [
                         {
-                            src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230369a1'/%3E%3Cpath d='M192 72 H320 L296 144 H216 Z' fill='%23facc15'/%3E%3Crect x='246' y='144' width='20' height='30' fill='%23facc15'/%3E%3Crect x='216' y='174' width='80' height='16' rx='8' fill='%23facc15'/%3E%3Cpath d='M128 384 Q72 288 112 184' fill='none' stroke='%23cbd5e1' stroke-width='16' stroke-linecap='round'/%3E%3Cpath d='M384 384 Q440 288 400 184' fill='none' stroke='%23cbd5e1' stroke-width='16' stroke-linecap='round'/%3E%3Cpath d='M136 272 Q256 304 376 272 L360 360 Q256 384 152 360 Z' fill='none' stroke='%23f8fafc' stroke-width='12'/%3E%3Cpath d='M232 400 Q208 280 312 200' fill='none' stroke='%23bef264' stroke-width='20' stroke-linecap='round'/%3E%3Ccircle cx='336' cy='184' r='64' fill='%23bef264' stroke='%2365a30d' stroke-width='8'/%3E%3C/svg%3E",
+                            src: activeLogo,
                             sizes: "192x192 512x512",
-                            type: "image/svg+xml"
+                            type: iconType,
+                            purpose: "any maskable"
                         }
                     ]
                 };
@@ -435,14 +569,62 @@
                 const manifestURL = URL.createObjectURL(blob);
                 const manifestTag = document.getElementById('pwa-manifest');
                 if (manifestTag) manifestTag.setAttribute('href', manifestURL);
-
-                const iconSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%230369a1'/%3E%3Cpath d='M192 72 H320 L296 144 H216 Z' fill='%23facc15'/%3E%3Crect x='246' y='144' width='20' height='30' fill='%23facc15'/%3E%3Crect x='216' y='174' width='80' height='16' rx='8' fill='%23facc15'/%3E%3Cpath d='M128 384 Q72 288 112 184' fill='none' stroke='%23cbd5e1' stroke-width='16' stroke-linecap='round'/%3E%3Cpath d='M384 384 Q440 288 400 184' fill='none' stroke='%23cbd5e1' stroke-width='16' stroke-linecap='round'/%3E%3Cpath d='M136 272 Q256 304 376 272 L360 360 Q256 384 152 360 Z' fill='none' stroke='%23f8fafc' stroke-width='12'/%3E%3Cpath d='M232 400 Q208 280 312 200' fill='none' stroke='%23bef264' stroke-width='20' stroke-linecap='round'/%3E%3Ccircle cx='336' cy='184' r='64' fill='%23bef264' stroke='%2365a30d' stroke-width='8'/%3E%3C/svg%3E";
-                const appleTouch = document.getElementById('apple-touch-icon');
-                if (appleTouch) appleTouch.setAttribute('href', iconSvg);
-                const favicon = document.getElementById('favicon-link');
-                if (favicon) favicon.setAttribute('href', iconSvg);
             } catch (e) {
                 console.error("PWA error:", e);
+            }
+        }
+
+        // Handle Logo File Upload (JPG, PNG, ICO, SVG, WEBP) with automatic resizing for storage safety
+        function handleCustomLogoUpload(event) {
+            if (appState.currentUserRole !== 'amministratore') {
+                showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
+                return;
+            }
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const size = 256; // Optimal crisp icon size for PWA, header & localStorage
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, size, size);
+                    const resizedDataUrl = canvas.toDataURL('image/png', 0.92);
+
+                    appState.customLogo = resizedDataUrl;
+                    saveToStorage();
+                    applyAppLogoToAllParts();
+                    renderApp();
+                    showToast('Nuovo logo applicato su tutta l\'app!', 'success');
+                };
+                img.onerror = function() {
+                    // Fallback directly for .ico or special formats
+                    appState.customLogo = e.target.result;
+                    saveToStorage();
+                    applyAppLogoToAllParts();
+                    renderApp();
+                    showToast('Nuovo logo applicato su tutta l\'app!', 'success');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function setPresetLogo(presetKey) {
+            if (appState.currentUserRole !== 'amministratore') {
+                showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
+                return;
+            }
+            if (PRESET_LOGOS[presetKey]) {
+                appState.customLogo = PRESET_LOGOS[presetKey];
+                saveToStorage();
+                applyAppLogoToAllParts();
+                renderApp();
+                showToast('Logo predefinito applicato su tutta l\'app!', 'success');
             }
         }
 
@@ -474,7 +656,9 @@
             const saved = localStorage.getItem('tennis_cup_pro_state_v2');
             if (saved) {
                 try {
-                    appState = JSON.parse(saved);
+                    const parsed = JSON.parse(saved);
+                    appState = Object.assign({}, DEFAULT_STATE, parsed);
+                    if (!appState.customLogo) appState.customLogo = PRESET_LOGOS.rackets;
                 } catch (e) {
                     console.error("Error reading storage:", e);
                 }
@@ -559,13 +743,11 @@
             const listEl = document.getElementById('role-selection-list');
             const pwdBox = document.getElementById('password-verification-box');
             const labelEl = document.getElementById('selected-role-label');
-            const defaultPwdEl = document.getElementById('default-pwd-display');
             const iconEl = document.getElementById('selected-role-icon');
 
             if (listEl) listEl.classList.add('hidden');
             if (pwdBox) pwdBox.classList.remove('hidden');
             if (labelEl) labelEl.textContent = role;
-            if (defaultPwdEl) defaultPwdEl.textContent = appState.passwords[role] || (role === 'editore' ? 'edit123' : 'admin123');
             if (iconEl) iconEl.className = role === 'amministratore' ? 'fa-solid fa-user-shield text-tennis-600 text-lg' : 'fa-solid fa-pen-to-square text-amber-600 text-lg';
         }
 
@@ -965,6 +1147,9 @@
 
         // Main Render Engine
         function renderApp() {
+            applyAppTheme();
+            applyAppLogoToAllParts();
+
             // Update Header Role Badge & Visibility
             const badgeEl = document.getElementById('user-role-badge');
             const dotEl = document.getElementById('role-dot');
@@ -1254,15 +1439,14 @@
 
         // Tab: Regolamento
         function renderRegolamentoTab() {
+            const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
             return `
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
                     <div class="flex items-center space-x-3 pb-3 border-b border-slate-100">
-                        <div class="w-10 h-10 rounded-xl bg-tennis-100 text-tennis-700 flex items-center justify-center shrink-0">
-                            <i class="fa-solid fa-scale-balanced text-lg"></i>
-                        </div>
+                        <img src="${activeLogo}" alt="Logo Torneo" class="w-11 h-11 rounded-xl object-cover shadow-xs border border-slate-200 shrink-0">
                         <div>
-                            <h3 class="font-extrabold text-sm text-slate-800">Regolamento Ufficiale</h3>
-                            <p class="text-xs text-slate-500">Norme del torneo e criteri di qualificazione</p>
+                            <h3 class="font-extrabold text-sm text-slate-800">${appState.tournamentName}</h3>
+                            <p class="text-xs text-slate-500">Regolamento ufficiale e criteri di qualificazione</p>
                         </div>
                     </div>
                     <div class="text-xs text-slate-700 leading-relaxed whitespace-pre-line bg-slate-50 p-4 rounded-xl border border-slate-200/60 font-medium">
@@ -1278,8 +1462,101 @@
                 return `<div class="text-center py-10 text-xs text-slate-500">Accesso non autorizzato. Effettua l'accesso come Amministratore.</div>`;
             }
 
+            const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
+            const currentThemeKey = appState.themeKey || 'sky';
+            const currentHex = appState.customThemeHex || '#0284c7';
+
             return `
                 <div class="space-y-6">
+                    <!-- Personalizzazione Tonalità & Colori dell'Interfaccia (Solo Amministratore) -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
+                                <i class="fa-solid fa-palette text-tennis-600"></i>
+                                <span>Tonalità & Colori Interfaccia</span>
+                            </h3>
+                            <span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-lg flex items-center space-x-1">
+                                <i class="fa-solid fa-user-shield"></i>
+                                <span>Solo Admin</span>
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Scegli una tonalità per aggiornare istantaneamente l'intestazione superiore, i pulsanti principali, le intestazioni dei gironi, i badge e i bordi.
+                        </p>
+
+                        <!-- Palette Predefinite -->
+                        <div class="grid grid-cols-2 gap-2">
+                            ${Object.entries(THEME_PALETTES).map(([key, pal]) => `
+                                <button type="button" onclick="setPresetTheme('${key}')" class="flex items-center space-x-2.5 p-2.5 rounded-xl border ${currentThemeKey === key ? 'border-tennis-600 bg-tennis-50/70 ring-1 ring-tennis-500' : 'border-slate-200 hover:bg-slate-50'} transition text-left">
+                                    <span class="w-6 h-6 rounded-full shrink-0 shadow-xs border border-white" style="background: linear-gradient(135deg, ${pal[500]}, ${pal[800]});"></span>
+                                    <span class="text-xs font-bold text-slate-800 truncate">${pal.name.split(' ')[0]}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <!-- Selettore Colore Libero -->
+                        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                            <div>
+                                <div class="text-xs font-extrabold text-slate-800">Colore Personalizzato</div>
+                                <div class="text-[10px] text-slate-500">Scegli qualsiasi tonalità libera</div>
+                            </div>
+                            <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
+                                <input type="color" value="${currentHex}" onchange="setCustomThemeColor(this.value)" class="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0">
+                                <span class="text-xs font-mono font-bold text-slate-700 uppercase">${currentHex}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Personalizzazione Logo dell'App (Solo Amministratore) -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
+                                <i class="fa-solid fa-image text-tennis-600"></i>
+                                <span>Logo & Icona dell'App</span>
+                            </h3>
+                            <span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-lg flex items-center space-x-1">
+                                <i class="fa-solid fa-user-shield"></i>
+                                <span>Solo Admin</span>
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Imposta il logo ufficiale del torneo: verrà aggiornato automaticamente nell'intestazione, nell'icona PWA sul telefono, nella scheda del browser e nel regolamento.
+                        </p>
+
+                        <!-- Anteprima + Caricamento File -->
+                        <div class="flex items-center space-x-4 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80">
+                            <img src="${activeLogo}" alt="Anteprima Logo" class="w-16 h-16 rounded-2xl object-cover shadow-md border-2 border-white shrink-0">
+                            <div class="flex-1 space-y-2">
+                                <label class="block w-full cursor-pointer bg-tennis-600 hover:bg-tennis-700 text-white text-center font-bold text-xs py-2.5 px-3 rounded-xl shadow transition">
+                                    <i class="fa-solid fa-upload mr-1.5"></i> Carica Immagine / .ICO
+                                    <input type="file" accept="image/*,.ico" onchange="handleCustomLogoUpload(event)" class="hidden">
+                                </label>
+                                <p class="text-[10px] text-slate-400 text-center">Supporta JPG, PNG, ICO, SVG</p>
+                            </div>
+                        </div>
+
+                        <!-- Loghi Predefiniti Rapidi -->
+                        <div>
+                            <div class="text-[11px] font-bold text-slate-600 mb-2">Oppure scegli un'icona predefinita:</div>
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <button type="button" onclick="setPresetLogo('rackets')" class="flex items-center space-x-2.5 p-2.5 rounded-xl border border-slate-200 hover:border-tennis-500 hover:bg-tennis-50/50 transition text-left">
+                                    <img src="${PRESET_LOGOS.rackets}" class="w-9 h-9 rounded-lg object-cover shrink-0">
+                                    <div>
+                                        <div class="text-xs font-extrabold text-slate-800">Racchette</div>
+                                        <div class="text-[10px] text-slate-500">Verde & Blu</div>
+                                    </div>
+                                </button>
+                                <button type="button" onclick="setPresetLogo('trophy')" class="flex items-center space-x-2.5 p-2.5 rounded-xl border border-slate-200 hover:border-tennis-500 hover:bg-tennis-50/50 transition text-left">
+                                    <img src="${PRESET_LOGOS.trophy}" class="w-9 h-9 rounded-lg object-cover shrink-0">
+                                    <div>
+                                        <div class="text-xs font-extrabold text-slate-800">Trofeo Cup</div>
+                                        <div class="text-[10px] text-slate-500">Blu & Oro</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Configura Nuovo Torneo -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                         <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
