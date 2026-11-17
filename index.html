@@ -419,6 +419,8 @@
             viewerSelectedPlayer: '',
             activeTab: 'gironi',
             tournamentName: 'Open Tennis Cup 2026',
+            copyrightText: '© 2026 Tennis Cup Pro • Tutti i diritti riservati',
+            developerText: 'Realizzata da [Tuo Nome / Studio]',
             customLogo: PRESET_LOGOS.rackets,
             themeKey: 'sky',
             customThemeHex: '#0284c7',
@@ -619,6 +621,8 @@
             try {
                 const payloadToSync = {
                     tournamentName: appState.tournamentName,
+                    copyrightText: appState.copyrightText,
+                    developerText: appState.developerText,
                     customLogo: appState.customLogo,
                     themeKey: appState.themeKey,
                     customThemeHex: appState.customThemeHex,
@@ -656,7 +660,9 @@
                 const newHash = JSON.stringify(remoteData.matches) + JSON.stringify(remoteData.players) + JSON.stringify(remoteData.playoffs);
                 const metaChanged = remoteData.tournamentName !== appState.tournamentName ||
                                     remoteData.themeKey !== appState.themeKey ||
-                                    remoteData.rulesText !== appState.rulesText;
+                                    remoteData.rulesText !== appState.rulesText ||
+                                    remoteData.copyrightText !== appState.copyrightText ||
+                                    remoteData.developerText !== appState.developerText;
 
                 if (newHash !== lastCloudHash || metaChanged) {
                     lastCloudHash = newHash;
@@ -856,7 +862,7 @@
             }
         }
 
-        // Handle Logo File Upload (JPG, PNG, ICO, SVG, WEBP) with automatic resizing for storage safety
+        // Handle Logo File Upload (JPG, PNG, ICO, SVG, WEBP) with automatic circular crop
         function handleCustomLogoUpload(event) {
             if (appState.currentUserRole !== 'amministratore') {
                 showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
@@ -870,7 +876,7 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const size = 256; // Optimal crisp icon size for PWA, header & localStorage
+                    const size = 256;
                     canvas.width = size;
                     canvas.height = size;
                     const ctx = canvas.getContext('2d');
@@ -888,7 +894,6 @@
                     showToast('Nuovo logo applicato su tutta l\'app!', 'success');
                 };
                 img.onerror = function() {
-                    // Fallback directly for .ico or special formats
                     appState.customLogo = e.target.result;
                     saveToStorage();
                     applyAppLogoToAllParts();
@@ -958,7 +963,6 @@
             }
         }
 
-        // Manual save button handler
         function saveAllChangesManual() {
             saveToStorage();
             if (appState.cloudSyncUrl && appState.currentUserRole !== 'visualizzatore') {
@@ -997,7 +1001,6 @@
             showToast('Sincronizzazione Cloud disattivata.', 'info');
         }
 
-        // Login & Modal Controller Functions
         function openLoginModal() {
             const modal = document.getElementById('login-modal');
             if (modal) modal.classList.remove('hidden');
@@ -1067,10 +1070,6 @@
             }
         }
 
-        function copySharedPlayerLink() {
-        }
-
-        // Match Editor Modal
         function openMatchModal(matchId, stageType = 'group') {
             if (appState.currentUserRole === 'visualizzatore') {
                 showToast('Accesso riservato a Editori e Amministratori per modificare i risultati.', 'info');
@@ -1206,7 +1205,6 @@
                 return;
             }
 
-            // Gather all groups dynamically
             const groups = [...new Set(appState.players.map(p => p.group))].sort();
             if (groups.length < 2) {
                 showToast('Servono almeno 2 gironi per generare i quarti.', 'info');
@@ -1240,7 +1238,6 @@
             showToast('Quarti di finale generati con successo dalle classifiche!', 'success');
         }
 
-        // Admin Tournament Generator
         function generateNewTournamentStructure(event) {
             event.preventDefault();
             if (appState.currentUserRole !== 'amministratore') return;
@@ -1257,7 +1254,7 @@
 
             for (let i = 1; i <= numPlayers; i++) {
                 const groupIndex = (i - 1) % numGroups;
-                const groupLetter = String.fromCharCode(65 + groupIndex); // A, B, C, D
+                const groupLetter = String.fromCharCode(65 + groupIndex);
                 const fName = firstNames[(i - 1) % firstNames.length];
                 const lName = lastNames[(i - 1) % lastNames.length];
                 appState.players.push({
@@ -1267,7 +1264,6 @@
                 });
             }
 
-            // Generate Round-Robin matches for each group
             appState.matches = [];
             const groupsMap = {};
             appState.players.forEach(p => {
@@ -1296,7 +1292,6 @@
                 }
             });
 
-            // Reset playoffs
             appState.playoffs = {
                 quarterfinals: [
                     { id: 'qf1', label: 'Quarto 1', player1: 'Vincente 1', player2: 'Secondo 2', date: '2026-11-25', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
@@ -1318,7 +1313,6 @@
             showToast('Nuovo torneo generato con successo!', 'success');
         }
 
-        // Update individual player name across players list, group matches, and playoffs (Admin only)
         function updatePlayerName(playerId, newNameRaw) {
             if (appState.currentUserRole !== 'amministratore') return;
             const newName = newNameRaw.trim();
@@ -1340,13 +1334,11 @@
 
             player.name = newName;
 
-            // Propagate name change across group matches
             appState.matches.forEach(m => {
                 if (m.player1 === oldName) m.player1 = newName;
                 if (m.player2 === oldName) m.player2 = newName;
             });
 
-            // Propagate name change across playoffs
             ['quarterfinals', 'semifinals', 'final'].forEach(stage => {
                 appState.playoffs[stage].forEach(match => {
                     if (match.player1 === oldName) match.player1 = newName;
@@ -1364,7 +1356,6 @@
             showToast(`Nome aggiornato: "${newName}"`, 'success');
         }
 
-        // Add a new player to a group and generate their group matches (Admin only)
         function addNewPlayerAdmin(event) {
             event.preventDefault();
             if (appState.currentUserRole !== 'amministratore') return;
@@ -1385,7 +1376,6 @@
 
             appState.players.push({ id: nextId, name, group });
 
-            // Create round-robin matches against existing players in the same group
             existingGroupPlayers.forEach((opponent, idx) => {
                 appState.matches.push({
                     id: `m_${Date.now()}_${idx}`,
@@ -1406,7 +1396,6 @@
             showToast(`Giocatore "${name}" aggiunto al Girone ${group}!`, 'success');
         }
 
-        // Remove a player and their unplayed/group matches (Admin only)
         function removePlayerAdmin(playerId) {
             if (appState.currentUserRole !== 'amministratore') return;
             const player = appState.players.find(p => p.id === playerId);
@@ -1446,6 +1435,18 @@
             showToast('Regolamento aggiornato con successo!', 'success');
         }
 
+        function saveCreditsAdmin(event) {
+            event.preventDefault();
+            if (appState.currentUserRole !== 'amministratore') return;
+            const devInput = document.getElementById('admin-developer-text');
+            const copyInput = document.getElementById('admin-copyright-text');
+            appState.developerText = devInput ? devInput.value.trim() : '';
+            appState.copyrightText = copyInput ? copyInput.value.trim() : '';
+            saveToStorage();
+            renderApp();
+            showToast('Copyright e autore aggiornati con successo!', 'success');
+        }
+
         function resetToDemoData() {
             if (appState.currentUserRole !== 'amministratore') return;
             localStorage.removeItem('tennis_cup_pro_state_v2');
@@ -1469,7 +1470,6 @@
             applyAppTheme();
             applyAppLogoToAllParts();
 
-            // Update Header Title & Role Badge
             const titleEl = document.getElementById('app-title');
             if (titleEl) titleEl.textContent = appState.tournamentName || 'Open Tennis Cup 2026';
 
@@ -1525,7 +1525,6 @@
                 if (appState.activeTab === 'admin') appState.activeTab = 'gironi';
             }
 
-            // Sync active bottom nav highlight
             document.querySelectorAll('#bottom-nav button').forEach(btn => {
                 btn.classList.remove('text-tennis-600');
                 btn.classList.add('text-slate-500');
@@ -1539,17 +1538,32 @@
             const main = document.getElementById('main-content');
             if (!main) return;
 
+            let viewHtml = '';
             if (appState.activeTab === 'gironi') {
-                main.innerHTML = renderGironiView();
+                viewHtml = renderGironiView();
             } else if (appState.activeTab === 'calendario') {
-                main.innerHTML = renderCalendarioView();
+                viewHtml = renderCalendarioView();
             } else if (appState.activeTab === 'fasefinale') {
-                main.innerHTML = renderFaseFinaleView();
+                viewHtml = renderFaseFinaleView();
             } else if (appState.activeTab === 'regolamento') {
-                main.innerHTML = renderRegolamentoView();
+                viewHtml = renderRegolamentoView();
             } else if (appState.activeTab === 'admin' && role === 'amministratore') {
-                main.innerHTML = renderAdminView();
+                viewHtml = renderAdminView();
             }
+
+            main.innerHTML = viewHtml + renderAppFooter();
+        }
+
+        // Subtle Footer with Copyright & Developer Credits at the bottom of scrollable content
+        function renderAppFooter() {
+            const copyText = appState.copyrightText || '© 2026 Tennis Cup Pro • Tutti i diritti riservati';
+            const devText = appState.developerText || 'Realizzata da [Tuo Nome / Studio]';
+            return `
+                <footer class="mt-8 pt-4 pb-2 border-t border-slate-200/80 text-center space-y-1 select-none">
+                    <p class="text-[11px] font-bold text-slate-600">${devText}</p>
+                    <p class="text-[10px] font-medium text-slate-400">${copyText}</p>
+                </footer>
+            `;
         }
 
         // View 1: Gironi & Classifiche
@@ -1559,7 +1573,6 @@
 
             return `
                 <div class="space-y-5">
-                    <!-- Quick Player Highlight Filter -->
                     <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between gap-2">
                         <div class="flex items-center space-x-2 text-xs font-bold text-slate-700 shrink-0">
                             <i class="fa-solid fa-user-check text-tennis-600"></i>
@@ -1794,6 +1807,8 @@
         // View 4: Regolamento
         function renderRegolamentoView() {
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
+            const copyText = appState.copyrightText || '© 2026 Tennis Cup Pro • Tutti i diritti riservati';
+            const devText = appState.developerText || 'Realizzata da [Tuo Nome / Studio]';
             return `
                 <div class="space-y-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
@@ -1806,6 +1821,17 @@
                         </div>
                         <div class="text-xs text-slate-700 leading-relaxed whitespace-pre-line font-medium">
                             ${appState.rulesText}
+                        </div>
+                    </div>
+
+                    <!-- Scheda Crediti & Copyright -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-tennis-50 text-tennis-700 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-code text-sm"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-xs font-extrabold text-slate-800 truncate">${devText}</div>
+                            <div class="text-[11px] text-slate-500 font-medium truncate">${copyText}</div>
                         </div>
                     </div>
                 </div>
@@ -2023,6 +2049,27 @@
                             </div>
                             <button type="submit" class="w-full bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs py-3 rounded-xl shadow transition">
                                 Salva Regolamento
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Modifica Copyright & Autore -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
+                            <i class="fa-regular fa-copyright text-tennis-600"></i>
+                            <span>Copyright & Autore App</span>
+                        </h3>
+                        <form onsubmit="saveCreditsAdmin(event)" class="space-y-3.5">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Realizzata da (Autore / Organizzazione)</label>
+                                <input type="text" id="admin-developer-text" value="${(appState.developerText || '').replace(/"/g, '&quot;')}" placeholder="Es. Realizzata da Mario Rossi" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Nota di Copyright</label>
+                                <input type="text" id="admin-copyright-text" value="${(appState.copyrightText || '').replace(/"/g, '&quot;')}" placeholder="Es. © 2026 Tennis Cup Pro - Tutti i diritti riservati" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                            </div>
+                            <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-3 rounded-xl shadow transition">
+                                Salva Crediti & Copyright
                             </button>
                         </form>
                     </div>
