@@ -126,7 +126,7 @@
             <div class="flex justify-between items-center gap-2">
                 <div class="flex items-center space-x-2.5 min-w-0">
                     <!-- Dynamic App Logo Container -->
-                    <div id="header-app-logo" class="w-10 h-10 rounded-xl bg-gradient-to-br from-lime-400 via-emerald-500 to-sky-600 border-2 border-white/80 shadow-md flex items-center justify-center shrink-0 relative overflow-hidden">
+                    <div id="header-app-logo" class="w-10 h-10 rounded-full bg-gradient-to-br from-lime-400 via-emerald-500 to-sky-600 border-2 border-white/80 shadow-md flex items-center justify-center shrink-0 relative overflow-hidden">
                         <!-- Default / Custom Logo rendered via JS -->
                     </div>
                     <div class="min-w-0">
@@ -369,8 +369,8 @@
     <script>
         // Preset SVG Logos (Encoded Data URIs)
         const PRESET_LOGOS = {
-            rackets: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#84cc16"/><stop offset="50%" stop-color="#10b981"/><stop offset="100%" stop-color="#0284c7"/></linearGradient></defs><rect width="200" height="200" rx="44" fill="url(#bg)"/><g stroke="#ffffff" stroke-width="6" fill="none" stroke-linecap="round"><ellipse cx="75" cy="75" rx="28" ry="38" transform="rotate(-45 75 75)"/><line x1="95" y1="95" x2="145" y2="145" stroke-width="10"/><ellipse cx="125" cy="75" rx="28" ry="38" transform="rotate(45 125 75)"/><line x1="105" y1="95" x2="55" y2="145" stroke-width="10"/></g><circle cx="100" cy="105" r="18" fill="#d9f99d" stroke="#ffffff" stroke-width="3"/></svg>`),
-            trophy: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs><rect width="200" height="200" rx="44" fill="url(#bg2)"/><path d="M65 55h70v35c0 22-15 38-35 38s-35-16-35-38V55z" fill="#fbbf24"/><path d="M65 68H48c0 20 10 30 22 32M135 68h17c0 20-10 30-22 32" stroke="#fbbf24" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="92" y="125" width="16" height="24" fill="#fbbf24"/><rect x="72" y="148" width="56" height="10" rx="5" fill="#f59e0b"/><circle cx="132" cy="72" r="16" fill="#bef264" stroke="#ffffff" stroke-width="2.5"/></svg>`)
+            rackets: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#84cc16"/><stop offset="50%" stop-color="#10b981"/><stop offset="100%" stop-color="#0284c7"/></linearGradient></defs><circle cx="100" cy="100" r="100" fill="url(#bg)"/><g stroke="#ffffff" stroke-width="6" fill="none" stroke-linecap="round"><ellipse cx="75" cy="75" rx="28" ry="38" transform="rotate(-45 75 75)"/><line x1="95" y1="95" x2="145" y2="145" stroke-width="10"/><ellipse cx="125" cy="75" rx="28" ry="38" transform="rotate(45 125 75)"/><line x1="105" y1="95" x2="55" y2="145" stroke-width="10"/></g><circle cx="100" cy="105" r="18" fill="#d9f99d" stroke="#ffffff" stroke-width="3"/></svg>`),
+            trophy: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs><circle cx="100" cy="100" r="100" fill="url(#bg2)"/><path d="M65 55h70v35c0 22-15 38-35 38s-35-16-35-38V55z" fill="#fbbf24"/><path d="M65 68H48c0 20 10 30 22 32M135 68h17c0 20-10 30-22 32" stroke="#fbbf24" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="92" y="125" width="16" height="24" fill="#fbbf24"/><rect x="72" y="148" width="56" height="10" rx="5" fill="#f59e0b"/><circle cx="132" cy="72" r="16" fill="#bef264" stroke="#ffffff" stroke-width="2.5"/></svg>`)
         };
 
         // Preset Theme Palettes
@@ -809,7 +809,7 @@
             // 1. Header Top-Left Badge
             const headerLogoEl = document.getElementById('header-app-logo');
             if (headerLogoEl) {
-                headerLogoEl.innerHTML = `<img src="${activeLogo}" alt="Logo Torneo" class="w-full h-full object-cover">`;
+                headerLogoEl.innerHTML = `<img src="${activeLogo}" alt="Logo Torneo" class="w-full h-full object-cover rounded-full">`;
             }
 
             // 2. Browser Favicon & iOS Home Screen Icon
@@ -874,6 +874,10 @@
                     canvas.width = size;
                     canvas.height = size;
                     const ctx = canvas.getContext('2d');
+                    ctx.beginPath();
+                    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+                    ctx.closePath();
+                    ctx.clip();
                     ctx.drawImage(img, 0, 0, size, size);
                     const resizedDataUrl = canvas.toDataURL('image/png', 0.92);
 
@@ -1794,7 +1798,7 @@
                 <div class="space-y-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                         <div class="flex items-center space-x-3 border-b border-slate-100 pb-3.5">
-                            <img src="${activeLogo}" alt="Logo" class="w-11 h-11 rounded-xl object-cover border border-slate-200 shadow-xs">
+                            <img src="${activeLogo}" alt="Logo" class="w-11 h-11 rounded-full object-cover border border-slate-200 shadow-xs">
                             <div>
                                 <h2 class="text-sm font-extrabold text-slate-800">${appState.tournamentName}</h2>
                                 <p class="text-[11px] text-slate-500 font-medium">Regolamento Ufficiale & Norme di Gioco</p>
@@ -1863,7 +1867,7 @@
                             <span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-lg">Solo Admin</span>
                         </div>
                         <div class="flex items-center space-x-3.5 bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                            <img src="${activeLogo}" alt="Anteprima Logo" class="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-md shrink-0">
+                            <img src="${activeLogo}" alt="Anteprima Logo" class="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md shrink-0">
                             <div class="space-y-1.5 flex-1 min-w-0">
                                 <div class="text-xs font-bold text-slate-800">Logo Attivo</div>
                                 <p class="text-[11px] text-slate-500 leading-snug">Applicato su intestazione, icona telefono (PWA) e regolamento.</p>
@@ -1871,11 +1875,11 @@
                         </div>
                         <div class="grid grid-cols-3 gap-2">
                             <button type="button" onclick="setPresetLogo('rackets')" class="p-2 rounded-xl border border-slate-200 hover:border-tennis-500 bg-slate-50 flex flex-col items-center space-y-1 transition">
-                                <img src="${PRESET_LOGOS.rackets}" class="w-8 h-8 rounded-lg">
+                                <img src="${PRESET_LOGOS.rackets}" class="w-8 h-8 rounded-full">
                                 <span class="text-[10px] font-bold text-slate-700">Racchette</span>
                             </button>
                             <button type="button" onclick="setPresetLogo('trophy')" class="p-2 rounded-xl border border-slate-200 hover:border-tennis-500 bg-slate-50 flex flex-col items-center space-y-1 transition">
-                                <img src="${PRESET_LOGOS.trophy}" class="w-8 h-8 rounded-lg">
+                                <img src="${PRESET_LOGOS.trophy}" class="w-8 h-8 rounded-full">
                                 <span class="text-[10px] font-bold text-slate-700">Trofeo Cup</span>
                             </button>
                             <label class="p-2 rounded-xl border border-dashed border-tennis-400 hover:bg-tennis-50 bg-tennis-50/40 flex flex-col items-center justify-center space-y-1 cursor-pointer transition text-center">
