@@ -63,13 +63,23 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            overscroll-behavior: none;
+        }
+        html {
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
         }
         /* Mobile Frame Styling for Desktop View */
         .mobile-container {
             max-width: 480px;
             margin: 0 auto;
-            height: 100vh;
-            height: 100dvh;
+            height: 100%;
             background-color: #ffffff;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
             position: relative;
@@ -166,12 +176,12 @@
         </header>
 
         <!-- Main Content Area with Dynamic Tabs -->
-        <main id="main-content" class="flex-1 overflow-y-auto pb-6 p-4 hide-scrollbar bg-slate-50">
+        <main id="main-content" class="flex-1 overflow-y-auto overscroll-y-contain pb-24 p-4 hide-scrollbar bg-slate-50" style="-webkit-overflow-scrolling: touch;">
             <!-- Dynamic Views injected via JavaScript -->
         </main>
 
         <!-- Bottom Navigation Bar -->
-        <nav id="bottom-nav" class="shrink-0 w-full bg-white border-t border-slate-200 px-1 py-2 flex justify-around items-center z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <nav id="bottom-nav" class="fixed sm:absolute bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white border-t border-slate-200 px-1 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex justify-around items-center z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <button onclick="switchTab('gironi')" id="nav-gironi" class="flex flex-col items-center text-slate-500 hover:text-tennis-600 transition flex-1 py-1">
                 <i class="fa-solid fa-ranking-star text-base"></i>
                 <span class="text-[10px] font-semibold mt-1">Gironi</span>
