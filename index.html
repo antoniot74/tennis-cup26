@@ -344,6 +344,13 @@
                         </div>
                     </div>
 
+                    <div class="flex justify-end -mt-2">
+                        <button type="button" onclick="clearMatchSchedule()" class="text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-lg transition flex items-center space-x-1">
+                            <i class="fa-solid fa-calendar-xmark"></i>
+                            <span>Azzera Data e Ora</span>
+                        </button>
+                    </div>
+
                     <div>
                         <label class="block text-[11px] font-bold text-slate-700 mb-1">Punteggio Completo (es. 6-4 3-6 10-7)</label>
                         <input type="text" id="match-score-string" placeholder="6-4 6-3" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
@@ -365,9 +372,15 @@
                         <label for="match-played" class="text-xs font-bold text-slate-700">Partita conclusa (aggiorna classifica)</label>
                     </div>
 
-                    <button type="submit" class="w-full bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs py-3 rounded-xl shadow-md transition">
-                        Salva Risultato
-                    </button>
+                    <div class="grid grid-cols-3 gap-2 pt-1">
+                        <button type="button" onclick="resetSingleMatch()" class="col-span-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs py-3 rounded-xl transition flex items-center justify-center space-x-1" title="Resetta completamente l'incontro">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>Reset</span>
+                        </button>
+                        <button type="submit" class="col-span-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs py-3 rounded-xl shadow-md transition">
+                            Salva Risultato
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -1129,6 +1142,25 @@
 
         function closeMatchModal() {
             document.getElementById('match-modal').classList.add('hidden');
+        }
+
+        function clearMatchSchedule() {
+            document.getElementById('match-date').value = '';
+            document.getElementById('match-time').value = '';
+            showToast('Data e ora azzerate. Premi "Salva Risultato" per confermare.', 'info');
+        }
+
+        function resetSingleMatch() {
+            document.getElementById('match-date').value = '';
+            document.getElementById('match-time').value = '';
+            document.getElementById('match-score-string').value = '';
+            document.getElementById('match-p1-sets').value = 0;
+            document.getElementById('match-p2-sets').value = 0;
+            document.getElementById('match-played').checked = false;
+
+            const fakeEvent = { preventDefault: function() {} };
+            saveMatchResult(fakeEvent);
+            showToast('Incontro resettato completamente ("Da definire").', 'info');
         }
 
         function saveMatchResult(event) {
