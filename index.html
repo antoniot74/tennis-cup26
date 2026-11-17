@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tennis Cup Pro - Gestione Tornei</title>
+    <!-- PWA Meta Tags & Fullscreen Support (Android & iOS) -->
+    <meta name="theme-color" content="#0369a1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tennis Cup Pro">
+    <link id="pwa-manifest" rel="manifest">
+    <link id="apple-touch-icon" rel="apple-touch-icon">
+    <link id="favicon-link" rel="icon" type="image/png">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        tennis: {
+                            50: 'var(--tennis-50, #f0f9ff)',
+                            100: 'var(--tennis-100, #e0f2fe)',
+                            200: 'var(--tennis-200, #bae6fd)',
+                            400: 'var(--tennis-400, #38bdf8)',
+                            500: 'var(--tennis-500, #0ea5e9)',
+                            600: 'var(--tennis-600, #0284c7)',
+                            700: 'var(--tennis-700, #0369a1)',
+                            800: 'var(--tennis-800, #075985)',
+                            900: 'var(--tennis-900, #0c4a6e)',
+                        },
+                        clay: {
+                            500: '#d97706',
+                            600: '#b45309',
+                            700: '#92400e'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --tennis-50: #f0f9ff;
+            --tennis-100: #e0f2fe;
+            --tennis-200: #bae6fd;
+            --tennis-400: #38bdf8;
+            --tennis-500: #0ea5e9;
+            --tennis-600: #0284c7;
+            --tennis-700: #0369a1;
+            --tennis-800: #075985;
+            --tennis-900: #0c4a6e;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+        /* Mobile Frame Styling for Desktop View */
+        .mobile-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background-color: #ffffff;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        @media (min-width: 640px) {
+            body {
+                background-color: #0f172a;
+                padding: 1.5rem 0;
+            }
+            .mobile-container {
+                min-height: calc(100vh - 3rem);
+                border-radius: 1.75rem;
+                overflow: hidden;
+            }
+        }
+        /* Hide scrollbars for clean mobile feel */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Anti-Badge Injector Safety Rules */
+        iframe[id*="netlify"], div[id*="netlify-badge"], a[href*="netlify.com/support"], .netlify-badge {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-tennis-200 selection:text-tennis-900">
+
+    <div class="mobile-container">
+        
+        <!-- Top App Header -->
+        <header class="bg-gradient-to-r from-tennis-900 via-tennis-800 to-tennis-700 text-white px-4 py-3.5 shadow-md sticky top-0 z-30">
+            <div class="flex justify-between items-center gap-2">
+                <div class="flex items-center space-x-2.5 min-w-0">
+                    <!-- Dynamic App Logo Container -->
+                    <div id="header-app-logo" class="w-10 h-10 rounded-xl bg-gradient-to-br from-lime-400 via-emerald-500 to-sky-600 border-2 border-white/80 shadow-md flex items-center justify-center shrink-0 relative overflow-hidden">
+                        <!-- Default / Custom Logo rendered via JS -->
+                    </div>
+                    <div class="min-w-0">
+                        <h1 id="app-title" class="font-extrabold text-sm tracking-tight leading-tight truncate">Open Tennis Cup 2026</h1>
+                        <div class="flex items-center space-x-1.5 mt-0.5">
+                            <span id="role-dot" class="w-2 h-2 rounded-full bg-blue-300 shrink-0"></span>
+                            <span id="user-role-badge" class="text-[11px] font-medium text-tennis-100 truncate">Visualizzatore</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Header Action Buttons -->
+                <div class="flex items-center space-x-1.5 shrink-0">
+                    <!-- PWA Install Button (shown when installable) -->
+                    <button id="pwa-install-banner" onclick="triggerPwaInstall()" class="hidden bg-amber-400 hover:bg-amber-300 text-slate-900 text-[11px] font-extrabold px-2.5 py-1.5 rounded-xl shadow transition flex items-center space-x-1">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Installa</span>
+                    </button>
+
+                    <!-- Save Button (Only Editore / Amministratore) -->
+                    <button id="header-save-btn" onclick="saveAllChangesManual()" class="hidden bg-tennis-500 hover:bg-tennis-400 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl shadow transition flex items-center space-x-1" title="Salva modifiche">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Salva</span>
+                    </button>
+
+                    <!-- Logout Button (Only Editore / Amministratore) -->
+                    <button id="header-logout-btn" onclick="logoutRole()" class="hidden bg-rose-500/90 hover:bg-rose-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl shadow transition flex items-center space-x-1" title="Esci dal ruolo">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Esci</span>
+                    </button>
+
+                    <!-- Secret Tap Trigger Area & Hidden Role / Login Switcher Button -->
+                    <div id="secret-login-zone" onclick="handleSecretLoginTap()" class="relative min-w-[78px] min-h-[34px] flex items-center justify-end cursor-pointer select-none rounded-xl">
+                        <button id="header-login-btn" onclick="event.stopPropagation(); openLoginModal()" class="hidden bg-white/15 hover:bg-white/25 backdrop-blur-xs text-white text-[11px] font-bold px-3 py-1.5 rounded-xl border border-white/20 transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-user-lock text-tennis-200"></i>
+                            <span>Accedi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area with Dynamic Tabs -->
+        <main id="main-content" class="flex-1 overflow-y-auto pb-24 p-4 hide-scrollbar bg-slate-50">
+            <!-- Dynamic Views injected via JavaScript -->
+        </main>
+
+        <!-- Bottom Navigation Bar -->
+        <nav id="bottom-nav" class="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-1 py-2 flex justify-around items-center z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <button onclick="switchTab('gironi')" id="nav-gironi" class="flex flex-col items-center text-slate-500 hover:text-tennis-600 transition flex-1 py-1">
+                <i class="fa-solid fa-ranking-star text-base"></i>
+                <span class="text-[10px] font-semibold mt-1">Gironi</span>
+            </button>
+            <button onclick="switchTab('calendario')" id="nav-calendario" class="flex flex-col items-center text-slate-500 hover:text-tennis-600 transition flex-1 py-1">
+                <i class="fa-solid fa-calendar-check text-base"></i>
+                <span class="text-[10px] font-semibold mt-1">Partite</span>
+            </button>
+            <button onclick="switchTab('fasefinale')" id="nav-fasefinale" class="flex flex-col items-center text-slate-500 hover:text-tennis-600 transition flex-1 py-1">
+                <i class="fa-solid fa-trophy text-base"></i>
+                <span class="text-[10px] font-semibold mt-1">Tabellone</span>
+            </button>
+            <button onclick="switchTab('regolamento')" id="nav-regolamento" class="flex flex-col items-center text-slate-500 hover:text-tennis-600 transition flex-1 py-1">
+                <i class="fa-solid fa-scale-balanced text-base"></i>
+                <span class="text-[10px] font-semibold mt-1">Regole</span>
+            </button>
+            <button id="nav-admin-tab" onclick="switchTab('admin')" class="hidden flex flex-col items-center text-slate-500 hover:text-tennis-600 transition flex-1 py-1">
+                <i class="fa-solid fa-sliders text-base"></i>
+                <span class="text-[10px] font-semibold mt-1">Admin</span>
+            </button>
+        </nav>
+
+        <!-- Notification Toast -->
+        <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-semibold opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center space-x-2 max-w-[90%]">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-tennis-400"></i>
+            <span id="toast-msg">Messaggio notifica</span>
+        </div>
+
+        <!-- Login & Role Selection Modal with Password Protection -->
+        <div id="login-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl transform transition-all border border-slate-100">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-lg font-extrabold text-slate-800 flex items-center space-x-2">
+                        <i class="fa-solid fa-shield-halved text-tennis-600"></i>
+                        <span>Accesso & Ruoli</span>
+                    </h3>
+                    <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600 bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <p class="text-xs text-slate-500 mb-4 leading-relaxed">Seleziona la modalità di accesso. I ruoli <strong>Editore</strong> e <strong>Amministratore</strong> richiedono password.</p>
+                
+                <!-- Role Selection Buttons -->
+                <div id="role-selection-list" class="space-y-2.5">
+                    <button onclick="selectRoleForLogin('visualizzatore')" class="w-full text-left p-3.5 rounded-2xl border border-slate-200 hover:border-tennis-500 hover:bg-tennis-50/70 transition flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-blue-100 text-blue-700 w-9 h-9 rounded-xl flex items-center justify-center">
+                                <i class="fa-solid fa-eye"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm text-slate-800">Visualizzatore</div>
+                                <div class="text-[11px] text-slate-500">Accesso libero • Consulta gironi e risultati</div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded-lg">Libero</span>
+                    </button>
+
+                    <button onclick="selectRoleForLogin('editore')" class="w-full text-left p-3.5 rounded-2xl border border-slate-200 hover:border-amber-500 hover:bg-amber-50/60 transition flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-amber-100 text-amber-700 w-9 h-9 rounded-xl flex items-center justify-center">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm text-slate-800">Editore</div>
+                                <div class="text-[11px] text-slate-500">Inserimento risultati e date partite</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-lock text-xs text-amber-600"></i>
+                    </button>
+
+                    <button onclick="selectRoleForLogin('amministratore')" class="w-full text-left p-3.5 rounded-2xl border border-slate-200 hover:border-tennis-600 hover:bg-tennis-50/70 transition flex items-center justify-between group">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-tennis-100 text-tennis-700 w-9 h-9 rounded-xl flex items-center justify-center">
+                                <i class="fa-solid fa-user-shield"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm text-slate-800">Amministratore</div>
+                                <div class="text-[11px] text-slate-500">Gestione completa torneo, gironi e password</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-lock text-xs text-tennis-600"></i>
+                    </button>
+                </div>
+
+                <!-- Password Verification Step (Hidden initially) -->
+                <div id="password-verification-box" class="hidden space-y-4 pt-1">
+                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center justify-between">
+                        <div class="flex items-center space-x-2.5">
+                            <i id="selected-role-icon" class="fa-solid fa-lock text-tennis-600"></i>
+                            <div>
+                                <div class="text-[10px] uppercase font-bold text-slate-400">Ruolo selezionato</div>
+                                <div id="selected-role-label" class="text-sm font-extrabold text-slate-800 capitalize">Editore</div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="resetLoginModalView()" class="text-xs text-tennis-700 font-semibold hover:underline">Cambia</button>
+                    </div>
+
+                    <form onsubmit="verifyRolePassword(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Inserisci Password</label>
+                            <div class="relative">
+                                <input type="password" id="role-password-input" class="w-full text-sm p-3 pr-10 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-tennis-500" placeholder="••••••••" required>
+                                <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                    <i id="pwd-eye-icon" class="fa-solid fa-eye text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="login-error-msg" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold p-2.5 rounded-xl flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <span>Password errata. Riprova.</span>
+                        </div>
+
+                        <button type="submit" class="w-full bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs py-3 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                            <span>Conferma e Accedi</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result & Date Editor Modal (For Group & Knockout Matches) -->
+        <div id="match-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl border border-slate-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-base font-extrabold text-slate-800 flex items-center space-x-2">
+                        <i class="fa-solid fa-tennis-ball text-tennis-600"></i>
+                        <span id="match-modal-title">Dettagli & Risultato Incontro</span>
+                    </h3>
+                    <button onclick="closeMatchModal()" class="text-slate-400 hover:text-slate-600 bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <form id="match-form" onsubmit="saveMatchResult(event)" class="space-y-4">
+                    <input type="hidden" id="match-id">
+                    <input type="hidden" id="match-stage-type" value="group">
+                    
+                    <div class="bg-gradient-to-r from-slate-50 to-slate-100 p-3.5 rounded-2xl border border-slate-200 text-xs flex justify-between items-center">
+                        <span id="modal-player1" class="font-extrabold text-slate-800 flex-1 text-right pr-2 truncate">Giocatore 1</span>
+                        <span class="bg-tennis-600 text-white font-bold px-2 py-0.5 rounded-md text-[10px]">VS</span>
+                        <span id="modal-player2" class="font-extrabold text-slate-800 flex-1 text-left pl-2 truncate">Giocatore 2</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 mb-1">Data Incontro</label>
+                            <input type="date" id="match-date" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 mb-1">Orario</label>
+                            <input type="time" id="match-time" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Punteggio Completo (es. 6-4 3-6 10-7)</label>
+                        <input type="text" id="match-score-string" placeholder="6-4 6-3" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label id="label-p1-sets" class="block text-[11px] font-bold text-slate-700 mb-1 truncate">Set Giocatore 1</label>
+                            <input type="number" id="match-p1-sets" min="0" max="3" value="0" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                        </div>
+                        <div>
+                            <label id="label-p2-sets" class="block text-[11px] font-bold text-slate-700 mb-1 truncate">Set Giocatore 2</label>
+                            <input type="number" id="match-p2-sets" min="0" max="3" value="0" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <input type="checkbox" id="match-played" class="w-4 h-4 text-tennis-600 rounded focus:ring-tennis-500">
+                        <label for="match-played" class="text-xs font-bold text-slate-700">Partita conclusa (aggiorna classifica)</label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs py-3 rounded-xl shadow-md transition">
+                        Salva Risultato
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preset SVG Logos (Encoded Data URIs)
+        const PRESET_LOGOS = {
+            rackets: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#84cc16"/><stop offset="50%" stop-color="#10b981"/><stop offset="100%" stop-color="#0284c7"/></linearGradient></defs><rect width="200" height="200" rx="44" fill="url(#bg)"/><g stroke="#ffffff" stroke-width="6" fill="none" stroke-linecap="round"><ellipse cx="75" cy="75" rx="28" ry="38" transform="rotate(-45 75 75)"/><line x1="95" y1="95" x2="145" y2="145" stroke-width="10"/><ellipse cx="125" cy="75" rx="28" ry="38" transform="rotate(45 125 75)"/><line x1="105" y1="95" x2="55" y2="145" stroke-width="10"/></g><circle cx="100" cy="105" r="18" fill="#d9f99d" stroke="#ffffff" stroke-width="3"/></svg>`),
+            trophy: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs><rect width="200" height="200" rx="44" fill="url(#bg2)"/><path d="M65 55h70v35c0 22-15 38-35 38s-35-16-35-38V55z" fill="#fbbf24"/><path d="M65 68H48c0 20 10 30 22 32M135 68h17c0 20-10 30-22 32" stroke="#fbbf24" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="92" y="125" width="16" height="24" fill="#fbbf24"/><rect x="72" y="148" width="56" height="10" rx="5" fill="#f59e0b"/><circle cx="132" cy="72" r="16" fill="#bef264" stroke="#ffffff" stroke-width="2.5"/></svg>`)
+        };
+
+        // Preset Theme Palettes
+        const THEME_PALETTES = {
+            sky: {
+                name: 'Celeste (Predefinito)',
+                50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd',
+                400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7',
+                700: '#0369a1', 800: '#075985', 900: '#0c4a6e'
+            },
+            emerald: {
+                name: 'Verde Campo',
+                50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0',
+                400: '#34d399', 500: '#10b981', 600: '#059669',
+                700: '#047857', 800: '#065f46', 900: '#064e3b'
+            },
+            clay: {
+                name: 'Terra Rossa',
+                50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa',
+                400: '#fb923c', 500: '#f97316', 600: '#ea580c',
+                700: '#c2410c', 800: '#9a3412', 900: '#7c2d12'
+            },
+            indigo: {
+                name: 'Blu Notte',
+                50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe',
+                400: '#818cf8', 500: '#6366f1', 600: '#4f46e5',
+                700: '#4338ca', 800: '#3730a3', 900: '#312e81'
+            },
+            purple: {
+                name: 'Viola Slam',
+                50: '#faf5ff', 100: '#f3e8ff', 200: '#e9d5ff',
+                400: '#c084fc', 500: '#a855f7', 600: '#9333ea',
+                700: '#7e22ce', 800: '#6b21a8', 900: '#581c87'
+            },
+            rose: {
+                name: 'Rosso Rubino',
+                50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3',
+                400: '#fb7185', 500: '#f43f5e', 600: '#e11d48',
+                700: '#be123c', 800: '#9f1239', 900: '#881337'
+            }
+        };
+
+        // Default Application State with Passwords, Custom Logo & Demo Tournament
+        const DEFAULT_STATE = {
+            currentUserRole: 'visualizzatore',
+            viewerSelectedPlayer: '',
+            activeTab: 'gironi',
+            tournamentName: 'Open Tennis Cup 2026',
+            customLogo: PRESET_LOGOS.rackets,
+            themeKey: 'sky',
+            customThemeHex: '#0284c7',
+            passwords: {
+                editore: 'edit123',
+                amministratore: 'admin123'
+            },
+            players: [
+                { id: 1, name: 'Marco Rossi', group: 'A' },
+                { id: 2, name: 'Luca Bianchi', group: 'A' },
+                { id: 3, name: 'Giovanni Verdi', group: 'A' },
+                { id: 4, name: 'Alessandro Neri', group: 'A' },
+                { id: 5, name: 'Matteo Gialli', group: 'B' },
+                { id: 6, name: 'Davide Blu', group: 'B' },
+                { id: 7, name: 'Simone Viola', group: 'B' },
+                { id: 8, name: 'Federico Rosa', group: 'B' }
+            ],
+            matches: [
+                { id: 'm1', group: 'A', player1: 'Marco Rossi', player2: 'Luca Bianchi', date: '2026-11-18', time: '18:00', scoreText: '6-4 6-3', p1Sets: 2, p2Sets: 0, played: true },
+                { id: 'm2', group: 'A', player1: 'Giovanni Verdi', player2: 'Alessandro Neri', date: '2026-11-18', time: '19:30', scoreText: '4-6 6-3 10-8', p1Sets: 1, p2Sets: 2, played: true },
+                { id: 'm3', group: 'A', player1: 'Marco Rossi', player2: 'Giovanni Verdi', date: '2026-11-20', time: '18:00', scoreText: '6-2 6-4', p1Sets: 2, p2Sets: 0, played: true },
+                { id: 'm4', group: 'A', player1: 'Luca Bianchi', player2: 'Alessandro Neri', date: '2026-11-20', time: '19:30', scoreText: '3-6 5-7', p1Sets: 0, p2Sets: 2, played: true },
+                { id: 'm5', group: 'A', player1: 'Marco Rossi', player2: 'Alessandro Neri', date: '2026-11-22', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false },
+                { id: 'm6', group: 'A', player1: 'Luca Bianchi', player2: 'Giovanni Verdi', date: '2026-11-22', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false },
+                { id: 'm7', group: 'B', player1: 'Matteo Gialli', player2: 'Davide Blu', date: '2026-11-19', time: '18:00', scoreText: '6-4 3-6 10-7', p1Sets: 2, p2Sets: 1, played: true },
+                { id: 'm8', group: 'B', player1: 'Simone Viola', player2: 'Federico Rosa', date: '2026-11-19', time: '19:30', scoreText: '6-1 6-2', p1Sets: 2, p2Sets: 0, played: true },
+                { id: 'm9', group: 'B', player1: 'Matteo Gialli', player2: 'Simone Viola', date: '2026-11-21', time: '18:00', scoreText: '4-6 4-6', p1Sets: 0, p2Sets: 2, played: true },
+                { id: 'm10', group: 'B', player1: 'Davide Blu', player2: 'Federico Rosa', date: '2026-11-21', time: '19:30', scoreText: '6-3 6-4', p1Sets: 2, p2Sets: 0, played: true },
+                { id: 'm11', group: 'B', player1: 'Matteo Gialli', player2: 'Federico Rosa', date: '2026-11-23', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false },
+                { id: 'm12', group: 'B', player1: 'Davide Blu', player2: 'Simone Viola', date: '2026-11-23', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false }
+            ],
+            playoffs: {
+                quarterfinals: [
+                    { id: 'qf1', label: 'Quarto 1', player1: 'Marco Rossi', player2: 'Federico Rosa', date: '2026-11-25', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
+                    { id: 'qf2', label: 'Quarto 2', player1: 'Davide Blu', player2: 'Giovanni Verdi', date: '2026-11-25', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
+                    { id: 'qf3', label: 'Quarto 3', player1: 'Simone Viola', player2: 'Luca Bianchi', date: '2026-11-26', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
+                    { id: 'qf4', label: 'Quarto 4', player1: 'Alessandro Neri', player2: 'Matteo Gialli', date: '2026-11-26', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
+                ],
+                semifinals: [
+                    { id: 'sf1', label: 'Semifinale 1', player1: 'Vincente Q1', player2: 'Vincente Q2', date: '2026-11-28', time: '17:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
+                    { id: 'sf2', label: 'Semifinale 2', player1: 'Vincente Q3', player2: 'Vincente Q4', date: '2026-11-28', time: '19:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
+                ],
+                final: [
+                    { id: 'f1', label: 'Finalissima', player1: 'Vincente SF1', player2: 'Vincente SF2', date: '2026-11-30', time: '18:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
+                ]
+            },
+            rulesText: `REGOLAMENTO UFFICIALE DEL TORNEO\n\n1. FORMULA DI GIOCO\nTutti gli incontri si disputano al meglio dei 3 set. Sul punteggio di 6 pari si gioca il tie-break a 7 punti. L'eventuale terzo set viene sostituito da un super tie-break a 10 punti.\n\n2. PUNTEGGI E CLASSIFICA GIRONI\n- Vittoria: 3 punti\n- Sconfitta: 0 punti\nIn caso di parità in classifica si considerano nell'ordine:\na) Scontro diretto\nb) Differenza set vinti/persi\nc) Differenza game vinti/persi\n\n3. FASE FINALE\nAccedono ai Quarti di Finale i migliori classificati di ciascun girone secondo il tabellone incrociato.\n\n4. ORARI E FAIR PLAY\nÈ richiesta la massima puntualità (tolleranza 15 minuti). I risultati vengono inseriti dagli Editori o dall'Amministratore al termine di ogni match.`
+        };
+
+        let appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        let pendingLoginRole = null;
+        let secretLoginTapCount = 0;
+        let secretLoginTapTimer = null;
+        let isLoginButtonRevealed = false;
+
+        // Handle 3-tap secret trigger on the top-right header zone to reveal "Accedi"
+        function handleSecretLoginTap() {
+            if (appState.currentUserRole !== 'visualizzatore' || isLoginButtonRevealed) return;
+
+            secretLoginTapCount++;
+            clearTimeout(secretLoginTapTimer);
+
+            if (secretLoginTapCount >= 3) {
+                isLoginButtonRevealed = true;
+                secretLoginTapCount = 0;
+                const loginBtn = document.getElementById('header-login-btn');
+                if (loginBtn) loginBtn.classList.remove('hidden');
+            } else {
+                // Reset counter if taps are too slow (more than 1.5s apart)
+                secretLoginTapTimer = setTimeout(() => {
+                    secretLoginTapCount = 0;
+                }, 1500);
+            }
+        }
+
+        // Generate a full 50-900 tonal scale from a single hex color
+        function buildPaletteFromHex(hex) {
+            const cleanHex = hex.replace('#', '');
+            const r = parseInt(cleanHex.substring(0, 2), 16) || 2;
+            const g = parseInt(cleanHex.substring(2, 4), 16) || 132;
+            const b = parseInt(cleanHex.substring(4, 6), 16) || 199;
+
+            const mix = (c, target, weight) => Math.round(c + (target - c) * weight);
+            const toHex = (nr, ng, nb) =>
+                '#' + [nr, ng, nb].map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('');
+
+            return {
+                50: toHex(mix(r, 255, 0.92), mix(g, 255, 0.92), mix(b, 255, 0.92)),
+                100: toHex(mix(r, 255, 0.84), mix(g, 255, 0.84), mix(b, 255, 0.84)),
+                200: toHex(mix(r, 255, 0.68), mix(g, 255, 0.68), mix(b, 255, 0.68)),
+                400: toHex(mix(r, 255, 0.25), mix(g, 255, 0.25), mix(b, 255, 0.25)),
+                500: toHex(mix(r, 255, 0.10), mix(g, 255, 0.10), mix(b, 255, 0.10)),
+                600: `#${cleanHex}`,
+                700: toHex(mix(r, 0, 0.18), mix(g, 0, 0.18), mix(b, 0, 0.18)),
+                800: toHex(mix(r, 0, 0.34), mix(g, 0, 0.34), mix(b, 0, 0.34)),
+                900: toHex(mix(r, 0, 0.50), mix(g, 0, 0.50), mix(b, 0, 0.50))
+            };
+        }
+
+        // Apply active theme palette to CSS variables & browser meta theme-color
+        function applyAppTheme() {
+            const palette = (appState.themeKey === 'custom' && appState.customThemeHex)
+                ? buildPaletteFromHex(appState.customThemeHex)
+                : (THEME_PALETTES[appState.themeKey] || THEME_PALETTES.sky);
+
+            const root = document.documentElement;
+            [50, 100, 200, 400, 500, 600, 700, 800, 900].forEach(shade => {
+                root.style.setProperty(`--tennis-${shade}`, palette[shade]);
+            });
+
+            const metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (metaTheme) metaTheme.setAttribute('content', palette[700]);
+        }
+
+        function setPresetTheme(key) {
+            if (appState.currentUserRole !== 'amministratore') {
+                showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
+                return;
+            }
+            if (THEME_PALETTES[key]) {
+                appState.themeKey = key;
+                appState.customThemeHex = THEME_PALETTES[key][600];
+                saveToStorage();
+                applyAppTheme();
+                initPWA();
+                renderApp();
+                showToast(`Tonalità "${THEME_PALETTES[key].name}" applicata!`, 'success');
+            }
+        }
+
+        function setCustomThemeColor(hexValue) {
+            if (appState.currentUserRole !== 'amministratore') {
+                showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
+                return;
+            }
+            appState.themeKey = 'custom';
+            appState.customThemeHex = hexValue;
+            saveToStorage();
+            applyAppTheme();
+            initPWA();
+            renderApp();
+            showToast('Colore personalizzato applicato a tutta l\'interfaccia!', 'success');
+        }
+
+        // Apply active logo across Header, Favicon, Apple Touch Icon & PWA Manifest
+        function applyAppLogoToAllParts() {
+            const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
+
+            // 1. Header Top-Left Badge
+            const headerLogoEl = document.getElementById('header-app-logo');
+            if (headerLogoEl) {
+                headerLogoEl.innerHTML = `<img src="${activeLogo}" alt="Logo Torneo" class="w-full h-full object-cover">`;
+            }
+
+            // 2. Browser Favicon & iOS Home Screen Icon
+            const appleTouch = document.getElementById('apple-touch-icon');
+            if (appleTouch) appleTouch.setAttribute('href', activeLogo);
+            const favicon = document.getElementById('favicon-link');
+            if (favicon) favicon.setAttribute('href', activeLogo);
+
+            // 3. Dynamic PWA Web App Manifest
+            initPWA();
+        }
+
+        // Initialize PWA manifest
+        function initPWA() {
+            try {
+                const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
+                const iconType = activeLogo.startsWith('data:image/svg+xml') ? 'image/svg+xml' : 'image/png';
+                const palette = (appState.themeKey === 'custom' && appState.customThemeHex)
+                    ? buildPaletteFromHex(appState.customThemeHex)
+                    : (THEME_PALETTES[appState.themeKey] || THEME_PALETTES.sky);
+                const manifest = {
+                    name: appState.tournamentName || "Tennis Cup Pro",
+                    short_name: "TennisCup",
+                    start_url: "./",
+                    display: "standalone",
+                    background_color: "#f1f5f9",
+                    theme_color: palette[700],
+                    icons: [
+                        {
+                            src: activeLogo,
+                            sizes: "192x192 512x512",
+                            type: iconType,
+                            purpose: "any maskable"
+                        }
+                    ]
+                };
+                const stringManifest = JSON.stringify(manifest);
+                const blob = new Blob([stringManifest], { type: 'application/json' });
+                const manifestURL = URL.createObjectURL(blob);
+                const manifestTag = document.getElementById('pwa-manifest');
+                if (manifestTag) manifestTag.setAttribute('href', manifestURL);
+            } catch (e) {
+                console.error("PWA error:", e);
+            }
+        }
+
+        // Handle Logo File Upload (JPG, PNG, ICO, SVG, WEBP) with automatic resizing for storage safety
+        function handleCustomLogoUpload(event) {
+            if (appState.currentUserRole !== 'amministratore') {
+                showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
+                return;
+            }
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const size = 256; // Optimal crisp icon size for PWA, header & localStorage
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, size, size);
+                    const resizedDataUrl = canvas.toDataURL('image/png', 0.92);
+
+                    appState.customLogo = resizedDataUrl;
+                    saveToStorage();
+                    applyAppLogoToAllParts();
+                    renderApp();
+                    showToast('Nuovo logo applicato su tutta l\'app!', 'success');
+                };
+                img.onerror = function() {
+                    // Fallback directly for .ico or special formats
+                    appState.customLogo = e.target.result;
+                    saveToStorage();
+                    applyAppLogoToAllParts();
+                    renderApp();
+                    showToast('Nuovo logo applicato su tutta l\'app!', 'success');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function setPresetLogo(presetKey) {
+            if (appState.currentUserRole !== 'amministratore') {
+                showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
+                return;
+            }
+            if (PRESET_LOGOS[presetKey]) {
+                appState.customLogo = PRESET_LOGOS[presetKey];
+                saveToStorage();
+                applyAppLogoToAllParts();
+                renderApp();
+                showToast('Logo predefinito applicato su tutta l\'app!', 'success');
+            }
+        }
+
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('pwa-install-banner');
+            if (btn) btn.classList.remove('hidden');
+        });
+
+        async function triggerPwaInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    showToast('Applicazione installata con successo!', 'success');
+                }
+                deferredPrompt = null;
+                const btn = document.getElementById('pwa-install-banner');
+                if (btn) btn.classList.add('hidden');
+            } else {
+                showToast('Per installare, usa il menu del browser e seleziona "Aggiungi a schermata Home".', 'info');
+            }
+        }
+
+        // Storage & Synchronization
+        function loadFromStorage() {
+            const saved = localStorage.getItem('tennis_cup_pro_state_v2');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    appState = Object.assign({}, DEFAULT_STATE, parsed);
+                    if (!appState.customLogo) appState.customLogo = PRESET_LOGOS.rackets;
+                } catch (e) {
+                    console.error("Error reading storage:", e);
+                }
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('tennis_cup_pro_state_v2', JSON.stringify(appState));
+        }
+
+        function saveAllChangesManual() {
+            saveToStorage();
+            showToast('Tutte le modifiche sono state salvate con successo!', 'success');
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-msg');
+            const iconEl = document.getElementById('toast-icon');
+            if (!toast || !msgEl) return;
+            msgEl.textContent = msg;
+            iconEl.className = type === 'success' ? 'fa-solid fa-circle-check text-tennis-400' : 'fa-solid fa-circle-info text-blue-400';
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        // Navigation
+        function switchTab(tabId) {
+            appState.activeTab = tabId;
+            document.querySelectorAll('#bottom-nav button').forEach(btn => {
+                btn.classList.remove('text-tennis-600');
+                btn.classList.add('text-slate-500');
+            });
+            const activeNavBtn = document.getElementById(`nav-${tabId}`);
+            if (activeNavBtn) {
+                activeNavBtn.classList.remove('text-slate-500');
+                activeNavBtn.classList.add('text-tennis-600');
+            }
+            renderApp();
+        }
+
+        // Login & Authentication
+        function openLoginModal() {
+            const modal = document.getElementById('login-modal');
+            if (modal) modal.classList.remove('hidden');
+            resetLoginModalView();
+        }
+
+        function closeLoginModal() {
+            const modal = document.getElementById('login-modal');
+            if (modal) modal.classList.add('hidden');
+            pendingLoginRole = null;
+        }
+
+        function resetLoginModalView() {
+            pendingLoginRole = null;
+            const listEl = document.getElementById('role-selection-list');
+            const pwdBox = document.getElementById('password-verification-box');
+            const errEl = document.getElementById('login-error-msg');
+            if (listEl) listEl.classList.remove('hidden');
+            if (pwdBox) pwdBox.classList.add('hidden');
+            if (errEl) errEl.classList.add('hidden');
+            const pwdInput = document.getElementById('role-password-input');
+            if (pwdInput) pwdInput.value = '';
+        }
+
+        function selectRoleForLogin(role) {
+            if (role === 'visualizzatore') {
+                appState.currentUserRole = 'visualizzatore';
+                isLoginButtonRevealed = false;
+                secretLoginTapCount = 0;
+                closeLoginModal();
+                saveToStorage();
+                renderApp();
+                showToast('Accesso effettuato come Visualizzatore', 'success');
+                return;
+            }
+
+            pendingLoginRole = role;
+            const listEl = document.getElementById('role-selection-list');
+            const pwdBox = document.getElementById('password-verification-box');
+            const labelEl = document.getElementById('selected-role-label');
+            const iconEl = document.getElementById('selected-role-icon');
+
+            if (listEl) listEl.classList.add('hidden');
+            if (pwdBox) pwdBox.classList.remove('hidden');
+            if (labelEl) labelEl.textContent = role;
+            if (iconEl) iconEl.className = role === 'amministratore' ? 'fa-solid fa-user-shield text-tennis-600 text-lg' : 'fa-solid fa-pen-to-square text-amber-600 text-lg';
+        }
+
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('role-password-input');
+            const eyeIcon = document.getElementById('pwd-eye-icon');
+            if (!pwdInput) return;
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                if (eyeIcon) eyeIcon.className = 'fa-solid fa-eye-slash text-xs';
+            } else {
+                pwdInput.type = 'password';
+                if (eyeIcon) eyeIcon.className = 'fa-solid fa-eye text-xs';
+            }
+        }
+
+        function verifyRolePassword(event) {
+            event.preventDefault();
+            const roleToActivate = pendingLoginRole;
+            const pwdInput = document.getElementById('role-password-input');
+            const errEl = document.getElementById('login-error-msg');
+            const enteredPwd = pwdInput ? pwdInput.value.trim() : '';
+            const correctPwd = appState.passwords[roleToActivate] || (roleToActivate === 'editore' ? 'edit123' : 'admin123');
+
+            if (enteredPwd === correctPwd) {
+                appState.currentUserRole = roleToActivate;
+                closeLoginModal();
+                saveToStorage();
+                renderApp();
+                showToast(`Accesso effettuato con successo come ${roleToActivate.toUpperCase()}`, 'success');
+            } else {
+                if (errEl) errEl.classList.remove('hidden');
+            }
+        }
+
+        function logoutRole() {
+            appState.currentUserRole = 'visualizzatore';
+            isLoginButtonRevealed = false;
+            secretLoginTapCount = 0;
+            saveToStorage();
+            renderApp();
+            showToast('Disconnesso dal ruolo privilegiato. Ora sei Visualizzatore.', 'info');
+        }
+
+        // Standings & Calculation Logic
+        function calculateGroupStandings(groupName) {
+            const groupPlayers = appState.players.filter(p => p.group === groupName);
+            const stats = {};
+
+            groupPlayers.forEach(p => {
+                stats[p.name] = {
+                    name: p.name,
+                    played: 0,
+                    won: 0,
+                    lost: 0,
+                    setsWon: 0,
+                    setsLost: 0,
+                    gamesWon: 0,
+                    gamesLost: 0,
+                    points: 0
+                };
+            });
+
+            const groupMatches = appState.matches.filter(m => m.group === groupName);
+            groupMatches.forEach(m => {
+                if (!m.played) return;
+                if (!stats[m.player1] || !stats[m.player2]) return;
+
+                stats[m.player1].played++;
+                stats[m.player2].played++;
+
+                stats[m.player1].setsWon += m.p1Sets;
+                stats[m.player1].setsLost += m.p2Sets;
+                stats[m.player2].setsWon += m.p2Sets;
+                stats[m.player2].setsLost += m.p1Sets;
+
+                // Parse game scores from scoreText if available
+                if (m.scoreText) {
+                    const sets = m.scoreText.split(' ');
+                    sets.forEach(setStr => {
+                        const parts = setStr.split('-');
+                        if (parts.length === 2) {
+                            const g1 = parseInt(parts[0]) || 0;
+                            const g2 = parseInt(parts[1]) || 0;
+                            stats[m.player1].gamesWon += g1;
+                            stats[m.player1].gamesLost += g2;
+                            stats[m.player2].gamesWon += g2;
+                            stats[m.player2].gamesLost += g1;
+                        }
+                    });
+                }
+
+                if (m.p1Sets > m.p2Sets) {
+                    stats[m.player1].won++;
+                    stats[m.player1].points += 3;
+                    stats[m.player2].lost++;
+                } else if (m.p2Sets > m.p1Sets) {
+                    stats[m.player2].won++;
+                    stats[m.player2].points += 3;
+                    stats[m.player1].lost++;
+                }
+            });
+
+            const standingsList = Object.values(stats);
+            standingsList.sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                const diffSetsA = a.setsWon - a.setsLost;
+                const diffSetsB = b.setsWon - b.setsLost;
+                if (diffSetsB !== diffSetsA) return diffSetsB - diffSetsA;
+                const diffGamesA = a.gamesWon - a.gamesLost;
+                const diffGamesB = b.gamesWon - b.gamesLost;
+                return diffGamesB - diffGamesA;
+            });
+
+            return standingsList;
+        }
+
+        // Match Editor Modal
+        function openMatchModal(matchId, stageType = 'group') {
+            if (appState.currentUserRole === 'visualizzatore') {
+                showToast('Accesso riservato a Editori e Amministratori per modificare i risultati.', 'info');
+                return;
+            }
+
+            let match = null;
+            if (stageType === 'group') {
+                match = appState.matches.find(m => m.id === matchId);
+            } else if (stageType === 'quarterfinal') {
+                match = appState.playoffs.quarterfinals.find(q => q.id === matchId);
+            } else if (stageType === 'semifinal') {
+                match = appState.playoffs.semifinals.find(s => s.id === matchId);
+            } else if (stageType === 'final') {
+                match = appState.playoffs.final.find(f => f.id === matchId);
+            }
+
+            if (!match) return;
+
+            document.getElementById('match-id').value = match.id;
+            document.getElementById('match-stage-type').value = stageType;
+            document.getElementById('modal-player1').textContent = match.player1;
+            document.getElementById('modal-player2').textContent = match.player2;
+            document.getElementById('label-p1-sets').textContent = match.player1;
+            document.getElementById('label-p2-sets').textContent = match.player2;
+            document.getElementById('match-date').value = match.date || '';
+            document.getElementById('match-time').value = match.time || '';
+            document.getElementById('match-score-string').value = match.scoreText || '';
+            document.getElementById('match-p1-sets').value = match.p1Sets || 0;
+            document.getElementById('match-p2-sets').value = match.p2Sets || 0;
+            document.getElementById('match-played').checked = match.played || false;
+
+            document.getElementById('match-modal').classList.remove('hidden');
+        }
+
+        function closeMatchModal() {
+            document.getElementById('match-modal').classList.add('hidden');
+        }
+
+        function saveMatchResult(event) {
+            event.preventDefault();
+            const matchId = document.getElementById('match-id').value;
+            const stageType = document.getElementById('match-stage-type').value;
+            const date = document.getElementById('match-date').value;
+            const time = document.getElementById('match-time').value;
+            const scoreText = document.getElementById('match-score-string').value.trim();
+            const p1Sets = parseInt(document.getElementById('match-p1-sets').value) || 0;
+            const p2Sets = parseInt(document.getElementById('match-p2-sets').value) || 0;
+            const played = document.getElementById('match-played').checked;
+
+            if (stageType === 'group') {
+                const m = appState.matches.find(item => item.id === matchId);
+                if (m) {
+                    m.date = date;
+                    m.time = time;
+                    m.scoreText = scoreText;
+                    m.p1Sets = p1Sets;
+                    m.p2Sets = p2Sets;
+                    m.played = played;
+                }
+            } else if (stageType === 'quarterfinal') {
+                const q = appState.playoffs.quarterfinals.find(item => item.id === matchId);
+                if (q) {
+                    q.date = date;
+                    q.time = time;
+                    q.scoreText = scoreText;
+                    q.p1Sets = p1Sets;
+                    q.p2Sets = p2Sets;
+                    q.played = played;
+                    if (played) {
+                        q.winner = p1Sets > p2Sets ? q.player1 : q.player2;
+                    } else {
+                        q.winner = '';
+                    }
+                    updatePlayoffProgression();
+                }
+            } else if (stageType === 'semifinal') {
+                const s = appState.playoffs.semifinals.find(item => item.id === matchId);
+                if (s) {
+                    s.date = date;
+                    s.time = time;
+                    s.scoreText = scoreText;
+                    s.p1Sets = p1Sets;
+                    s.p2Sets = p2Sets;
+                    s.played = played;
+                    if (played) {
+                        s.winner = p1Sets > p2Sets ? s.player1 : s.player2;
+                    } else {
+                        s.winner = '';
+                    }
+                    updatePlayoffProgression();
+                }
+            } else if (stageType === 'final') {
+                const f = appState.playoffs.final.find(item => item.id === matchId);
+                if (f) {
+                    f.date = date;
+                    f.time = time;
+                    f.scoreText = scoreText;
+                    f.p1Sets = p1Sets;
+                    f.p2Sets = p2Sets;
+                    f.played = played;
+                    if (played) {
+                        f.winner = p1Sets > p2Sets ? f.player1 : f.player2;
+                    } else {
+                        f.winner = '';
+                    }
+                }
+            }
+
+            saveToStorage();
+            closeMatchModal();
+            renderApp();
+            showToast('Risultato e incontri aggiornati con successo!', 'success');
+        }
+
+        function updatePlayoffProgression() {
+            const q = appState.playoffs.quarterfinals;
+            const s = appState.playoffs.semifinals;
+            const f = appState.playoffs.final;
+
+            if (s[0]) s[0].player1 = q[0].winner || 'Vincente Q1';
+            if (s[0]) s[0].player2 = q[1].winner || 'Vincente Q2';
+            if (s[1]) s[1].player1 = q[2].winner || 'Vincente Q3';
+            if (s[1]) s[1].player2 = q[3].winner || 'Vincente Q4';
+
+            if (f[0]) f[0].player1 = s[0].winner || 'Vincente SF1';
+            if (f[0]) f[0].player2 = s[1].winner || 'Vincente SF2';
+        }
+
+        function generateQuarterfinalsFromStandings() {
+            if (appState.currentUserRole !== 'amministratore') {
+                showToast('Funzione riservata all\'Amministratore.', 'info');
+                return;
+            }
+
+            // Gather all groups dynamically
+            const groups = [...new Set(appState.players.map(p => p.group))].sort();
+            if (groups.length < 2) {
+                showToast('Servono almeno 2 gironi per generare i quarti.', 'info');
+                return;
+            }
+
+            const standingsA = calculateGroupStandings(groups[0]);
+            const standingsB = calculateGroupStandings(groups[1] || 'B');
+
+            const p1A = standingsA[0] ? standingsA[0].name : '1° Girone A';
+            const p2A = standingsA[1] ? standingsA[1].name : '2° Girone A';
+            const p1B = standingsB[0] ? standingsB[0].name : '1° Girone B';
+            const p2B = standingsB[1] ? standingsB[1].name : '2° Girone B';
+
+            appState.playoffs.quarterfinals[0].player1 = p1A;
+            appState.playoffs.quarterfinals[0].player2 = p2B;
+
+            appState.playoffs.quarterfinals[1].player1 = p1B;
+            appState.playoffs.quarterfinals[1].player2 = p2A;
+
+            if (standingsA[2] && standingsB[2]) {
+                appState.playoffs.quarterfinals[2].player1 = standingsA[2].name;
+                appState.playoffs.quarterfinals[2].player2 = standingsB[3] ? standingsB[3].name : '4° B';
+                appState.playoffs.quarterfinals[3].player1 = standingsB[2].name;
+                appState.playoffs.quarterfinals[3].player2 = standingsA[3] ? standingsA[3].name : '4° A';
+            }
+
+            updatePlayoffProgression();
+            saveToStorage();
+            renderApp();
+            showToast('Quarti di finale generati con successo dalle classifiche!', 'success');
+        }
+
+        // Admin Tournament Generator
+        function generateNewTournamentStructure(event) {
+            event.preventDefault();
+            if (appState.currentUserRole !== 'amministratore') return;
+
+            const name = document.getElementById('admin-tournament-name').value;
+            const numPlayers = parseInt(document.getElementById('admin-num-players').value);
+            const numGroups = parseInt(document.getElementById('admin-num-groups').value);
+
+            appState.tournamentName = name;
+            appState.players = [];
+
+            const firstNames = ['Marco', 'Luca', 'Giovanni', 'Alessandro', 'Matteo', 'Davide', 'Simone', 'Federico', 'Andrea', 'Stefano', 'Paolo', 'Lorenzo', 'Francesco', 'Riccardo', 'Gabriele', 'Filippo'];
+            const lastNames = ['Rossi', 'Bianchi', 'Verdi', 'Neri', 'Gialli', 'Blu', 'Viola', 'Rosa', 'Ferrari', 'Russo', 'Romano', 'Gallo', 'Costa', 'Fontana', 'Conti', 'Esposito'];
+
+            for (let i = 1; i <= numPlayers; i++) {
+                const groupIndex = (i - 1) % numGroups;
+                const groupLetter = String.fromCharCode(65 + groupIndex); // A, B, C, D
+                const fName = firstNames[(i - 1) % firstNames.length];
+                const lName = lastNames[(i - 1) % lastNames.length];
+                appState.players.push({
+                    id: i,
+                    name: `${fName} ${lName} (${groupLetter}${Math.ceil(i/numGroups)})`,
+                    group: groupLetter
+                });
+            }
+
+            // Generate Round-Robin matches for each group
+            appState.matches = [];
+            const groupsMap = {};
+            appState.players.forEach(p => {
+                if (!groupsMap[p.group]) groupsMap[p.group] = [];
+                groupsMap[p.group].push(p.name);
+            });
+
+            let matchCounter = 1;
+            Object.keys(groupsMap).forEach(gLetter => {
+                const gPlayers = groupsMap[gLetter];
+                for (let i = 0; i < gPlayers.length; i++) {
+                    for (let j = i + 1; j < gPlayers.length; j++) {
+                        appState.matches.push({
+                            id: `m_${matchCounter++}`,
+                            group: gLetter,
+                            player1: gPlayers[i],
+                            player2: gPlayers[j],
+                            date: '2026-11-20',
+                            time: '18:00',
+                            scoreText: '',
+                            p1Sets: 0,
+                            p2Sets: 0,
+                            played: false
+                        });
+                    }
+                }
+            });
+
+            // Reset playoffs
+            appState.playoffs = {
+                quarterfinals: [
+                    { id: 'qf1', label: 'Quarto 1', player1: 'Vincente 1', player2: 'Secondo 2', date: '2026-11-25', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
+                    { id: 'qf2', label: 'Quarto 2', player1: 'Vincente 2', player2: 'Secondo 1', date: '2026-11-25', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
+                    { id: 'qf3', label: 'Quarto 3', player1: '3° Girone A', player2: '4° Girone B', date: '2026-11-26', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
+                    { id: 'qf4', label: 'Quarto 4', player1: '3° Girone B', player2: '4° Girone A', date: '2026-11-26', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
+                ],
+                semifinals: [
+                    { id: 'sf1', label: 'Semifinale 1', player1: 'Vincente Q1', player2: 'Vincente Q2', date: '2026-11-28', time: '17:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
+                    { id: 'sf2', label: 'Semifinale 2', player1: 'Vincente Q3', player2: 'Vincente Q4', date: '2026-11-28', time: '19:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
+                ],
+                final: [
+                    { id: 'f1', label: 'Finalissima', player1: 'Vincente SF1', player2: 'Vincente SF2', date: '2026-11-30', time: '18:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
+                ]
+            };
+
+            saveToStorage();
+            renderApp();
+            showToast('Nuovo torneo generato con successo!', 'success');
+        }
+
+        function updateRolePasswords(event) {
+            event.preventDefault();
+            if (appState.currentUserRole !== 'amministratore') return;
+
+            const editPwd = document.getElementById('new-edit-pwd').value.trim();
+            const adminPwd = document.getElementById('new-admin-pwd').value.trim();
+
+            if (editPwd) appState.passwords.editore = editPwd;
+            if (adminPwd) appState.passwords.amministratore = adminPwd;
+
+            saveToStorage();
+            showToast('Password aggiornate con successo!', 'success');
+        }
+
+        function saveRules(event) {
+            event.preventDefault();
+            if (appState.currentUserRole !== 'amministratore') return;
+
+            const newRules = document.getElementById('admin-rules-textarea').value;
+            appState.rulesText = newRules;
+            saveToStorage();
+            showToast('Regolamento aggiornato con successo!', 'success');
+        }
+
+        function resetToDemoData() {
+            if (appState.currentUserRole !== 'amministratore') return;
+            if (confirm('Vuoi ripristinare i dati dimostrativi iniziali?')) {
+                appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+                saveToStorage();
+                renderApp();
+                showToast('Dati ripristinati allo stato iniziale.', 'info');
+            }
+        }
+
+        // Main Render Engine
+        function renderApp() {
+            applyAppTheme();
+            applyAppLogoToAllParts();
+
+            // Update Header Role Badge & Visibility
+            const badgeEl = document.getElementById('user-role-badge');
+            const dotEl = document.getElementById('role-dot');
+            const saveBtn = document.getElementById('header-save-btn');
+            const logoutBtn = document.getElementById('header-logout-btn');
+            const loginBtn = document.getElementById('header-login-btn');
+            const secretZone = document.getElementById('secret-login-zone');
+            const adminNav = document.getElementById('nav-admin-tab');
+            const appTitleEl = document.getElementById('app-title');
+
+            if (appTitleEl) appTitleEl.textContent = appState.tournamentName;
+
+            if (badgeEl) {
+                badgeEl.textContent = appState.currentUserRole.charAt(0).toUpperCase() + appState.currentUserRole.slice(1);
+            }
+            if (dotEl) {
+                dotEl.className = `w-2 h-2 rounded-full shrink-0 ${appState.currentUserRole === 'amministratore' ? 'bg-tennis-400 animate-pulse' : appState.currentUserRole === 'editore' ? 'bg-amber-400' : 'bg-blue-300'}`;
+            }
+
+            if (appState.currentUserRole === 'visualizzatore') {
+                if (saveBtn) saveBtn.classList.add('hidden');
+                if (logoutBtn) logoutBtn.classList.add('hidden');
+                if (secretZone) secretZone.classList.remove('hidden');
+                if (loginBtn) {
+                    if (isLoginButtonRevealed) {
+                        loginBtn.classList.remove('hidden');
+                    } else {
+                        loginBtn.classList.add('hidden');
+                    }
+                }
+                if (adminNav) adminNav.classList.add('hidden');
+                if (appState.activeTab === 'admin') appState.activeTab = 'gironi';
+            } else {
+                if (saveBtn) saveBtn.classList.remove('hidden');
+                if (logoutBtn) logoutBtn.classList.remove('hidden');
+                if (secretZone) secretZone.classList.add('hidden');
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (appState.currentUserRole === 'amministratore') {
+                    if (adminNav) adminNav.classList.remove('hidden');
+                } else {
+                    if (adminNav) adminNav.classList.add('hidden');
+                    if (appState.activeTab === 'admin') appState.activeTab = 'gironi';
+                }
+            }
+
+            // Render Main Content based on activeTab
+            const main = document.getElementById('main-content');
+            if (!main) return;
+
+            if (appState.activeTab === 'gironi') {
+                main.innerHTML = renderGironiTab();
+            } else if (appState.activeTab === 'calendario') {
+                main.innerHTML = renderCalendarioTab();
+            } else if (appState.activeTab === 'fasefinale') {
+                main.innerHTML = renderFaseFinaleTab();
+            } else if (appState.activeTab === 'regolamento') {
+                main.innerHTML = renderRegolamentoTab();
+            } else if (appState.activeTab === 'admin') {
+                main.innerHTML = renderAdminTab();
+            }
+        }
+
+        // Tab: Gironi & Classifiche
+        function renderGironiTab() {
+            const groups = [...new Set(appState.players.map(p => p.group))].sort();
+            const allPlayers = appState.players.map(p => p.name).sort();
+
+            let html = `
+                <div class="space-y-5">
+                    <!-- Viewer Player Filter Bar -->
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                        <div class="flex items-center space-x-2 text-xs font-bold text-slate-700">
+                            <i class="fa-solid fa-filter text-tennis-600"></i>
+                            <span>Filtra per Giocatore:</span>
+                        </div>
+                        <select onchange="onViewerPlayerFilterChange(this.value)" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                            <option value="">-- Tutti i giocatori --</option>
+                            ${allPlayers.map(p => `<option value="${p}" ${appState.viewerSelectedPlayer === p ? 'selected' : ''}>${p}</option>`).join('')}
+                        </select>
+                    </div>
+            `;
+
+            groups.forEach(gLetter => {
+                const standings = calculateGroupStandings(gLetter);
+                html += `
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+                        <div class="bg-gradient-to-r from-tennis-700 to-tennis-800 px-4 py-3 text-white flex justify-between items-center">
+                            <h3 class="font-extrabold text-sm flex items-center space-x-2">
+                                <i class="fa-solid fa-people-group text-tennis-200"></i>
+                                <span>Girone ${gLetter}</span>
+                            </h3>
+                            <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-lg font-bold">${standings.length} Giocatori</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase">
+                                        <th class="py-2.5 px-3">Pos / Giocatore</th>
+                                        <th class="py-2.5 px-2 text-center">Pt</th>
+                                        <th class="py-2.5 px-2 text-center">G</th>
+                                        <th class="py-2.5 px-2 text-center">V/P</th>
+                                        <th class="py-2.5 px-2 text-center">Set</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-xs">
+                `;
+
+                standings.forEach((st, idx) => {
+                    const isFiltered = appState.viewerSelectedPlayer && st.name === appState.viewerSelectedPlayer;
+                    const posBadge = idx === 0 ? 'bg-amber-100 text-amber-700 font-extrabold' : idx === 1 ? 'bg-slate-200 text-slate-700 font-bold' : 'bg-slate-100 text-slate-500 font-semibold';
+                    
+                    html += `
+                        <tr class="${isFiltered ? 'bg-tennis-50/80 ring-2 ring-tennis-400/50' : 'hover:bg-slate-50/60'} transition">
+                            <td class="py-3 px-3 flex items-center space-x-2.5">
+                                <span class="w-6 h-6 rounded-lg ${posBadge} flex items-center justify-center text-[11px] shrink-0">${idx + 1}</span>
+                                <span class="font-extrabold text-slate-800 truncate">${st.name}</span>
+                            </td>
+                            <td class="py-3 px-2 text-center font-black text-tennis-700">${st.points}</td>
+                            <td class="py-3 px-2 text-center text-slate-600">${st.played}</td>
+                            <td class="py-3 px-2 text-center text-slate-600">${st.won}/${st.lost}</td>
+                            <td class="py-3 px-2 text-center text-slate-500 font-medium">${st.setsWon}-${st.setsLost}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            return html;
+        }
+
+        function onViewerPlayerFilterChange(val) {
+            appState.viewerSelectedPlayer = val;
+            renderApp();
+        }
+
+        // Tab: Calendario & Partite Gironi
+        function renderCalendarioTab() {
+            const matches = appState.matches;
+            const groups = [...new Set(matches.map(m => m.group))].sort();
+
+            let html = `
+                <div class="space-y-5">
+                    <div class="bg-blue-50 border border-blue-200 p-3 rounded-2xl flex items-center space-x-3 text-xs text-blue-900">
+                        <i class="fa-solid fa-calendar-days text-tennis-600 text-base shrink-0"></i>
+                        <div>
+                            <span class="font-bold">Calendario Incontri Gironi.</span> 
+                            ${appState.currentUserRole !== 'visualizzatore' ? 'Tocca una partita per inserire o modificare data, orario e punteggio.' : 'Visualizza date, orari e risultati.'}
+                        </div>
+                    </div>
+            `;
+
+            groups.forEach(gLetter => {
+                const gMatches = matches.filter(m => m.group === gLetter);
+                html += `
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-tennis-700 text-white text-xs font-extrabold px-2.5 py-1 rounded-xl">Girone ${gLetter}</span>
+                            <div class="flex-1 h-px bg-slate-200"></div>
+                        </div>
+                        <div class="space-y-2.5">
+                `;
+
+                gMatches.forEach(m => {
+                    const isEditable = appState.currentUserRole !== 'visualizzatore';
+                    const hasFilter = appState.viewerSelectedPlayer;
+                    const matchesFilter = !hasFilter || m.player1 === appState.viewerSelectedPlayer || m.player2 === appState.viewerSelectedPlayer;
+
+                    if (hasFilter && !matchesFilter) return;
+
+                    html += `
+                        <div onclick="${isEditable ? `openMatchModal('${m.id}', 'group')` : ''}" class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs ${isEditable ? 'cursor-pointer hover:border-tennis-500 hover:shadow-md transition' : ''} relative">
+                            <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 mb-2">
+                                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md flex items-center space-x-1">
+                                    <i class="fa-regular fa-clock"></i>
+                                    <span>${m.date || 'Da definire'} ${m.time ? '• ' + m.time : ''}</span>
+                                </span>
+                                <span class="${m.played ? 'bg-tennis-100 text-tennis-800' : 'bg-amber-100 text-amber-800'} px-2 py-0.5 rounded-md">
+                                    ${m.played ? 'Conclusa' : 'Da giocare'}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-extrabold ${m.played && m.p1Sets > m.p2Sets ? 'text-tennis-700' : 'text-slate-800'} flex-1 text-right pr-2 truncate">${m.player1}</span>
+                                <div class="bg-slate-100 text-slate-700 font-black px-2.5 py-1 rounded-xl text-center shrink-0 min-w-[50px]">
+                                    ${m.played ? `${m.p1Sets} - ${m.p2Sets}` : 'VS'}
+                                </div>
+                                <span class="font-extrabold ${m.played && m.p2Sets > m.p1Sets ? 'text-tennis-700' : 'text-slate-800'} flex-1 text-left pl-2 truncate">${m.player2}</span>
+                            </div>
+                            ${m.scoreText ? `<div class="mt-2 pt-2 border-t border-slate-100 text-center text-[11px] font-bold text-slate-500">Punteggio: ${m.scoreText}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `</div></div>`;
+            });
+
+            html += `</div>`;
+            return html;
+        }
+
+        // Tab: Fase Finale (Tabellone)
+        function renderFaseFinaleTab() {
+            const qf = appState.playoffs.quarterfinals;
+            const sf = appState.playoffs.semifinals;
+            const final = appState.playoffs.final;
+            const isAdmin = appState.currentUserRole === 'amministratore';
+            const isEditable = appState.currentUserRole !== 'visualizzatore';
+
+            let html = `
+                <div class="space-y-6">
+                    <!-- Admin Actions Bar -->
+                    ${isAdmin ? `
+                        <div class="bg-tennis-50 border border-tennis-200 p-3.5 rounded-2xl flex items-center justify-between">
+                            <div class="text-xs font-bold text-tennis-900">Genera accoppiamenti Quarti dalle Classifiche dei Gironi</div>
+                            <button onclick="generateQuarterfinalsFromStandings()" class="bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow transition flex items-center space-x-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                <span>Genera Quarti</span>
+                            </button>
+                        </div>
+                    ` : ''}
+
+                    <!-- Quarti di Finale -->
+                    <div class="space-y-3">
+                        <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
+                            <i class="fa-solid fa-chess-board text-tennis-600"></i>
+                            <span>Quarti di Finale</span>
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            `;
+
+            qf.forEach(match => {
+                html += renderPlayoffMatchCard(match, 'quarterfinal', isEditable);
+            });
+
+            html += `
+                        </div>
+                    </div>
+
+                    <!-- Semifinali -->
+                    <div class="space-y-3">
+                        <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
+                            <i class="fa-solid fa-medal text-tennis-600"></i>
+                            <span>Semifinali</span>
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            `;
+
+            sf.forEach(match => {
+                html += renderPlayoffMatchCard(match, 'semifinal', isEditable);
+            });
+
+            html += `
+                        </div>
+                    </div>
+
+                    <!-- Finalissima -->
+                    <div class="space-y-3">
+                        <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
+                            <i class="fa-solid fa-trophy text-amber-500"></i>
+                            <span>Finalissima Trofeo</span>
+                        </h3>
+            `;
+
+            final.forEach(match => {
+                html += renderPlayoffMatchCard(match, 'final', isEditable);
+            });
+
+            html += `</div></div>`;
+            return html;
+        }
+
+        function renderPlayoffMatchCard(match, stageType, isEditable) {
+            return `
+                <div onclick="${isEditable ? `openMatchModal('${match.id}', '${stageType}')` : ''}" class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs ${isEditable ? 'cursor-pointer hover:border-tennis-500 hover:shadow-md transition' : ''} relative">
+                    <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 mb-2">
+                        <span class="text-tennis-700 bg-tennis-50 px-2 py-0.5 rounded-md font-extrabold">${match.label}</span>
+                        <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">${match.date || 'Da definire'} ${match.time ? '• ' + match.time : ''}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-extrabold ${match.played && match.p1Sets > match.p2Sets ? 'text-tennis-700' : 'text-slate-800'} flex-1 text-right pr-2 truncate">${match.player1}</span>
+                        <div class="bg-slate-100 text-slate-700 font-black px-2.5 py-1 rounded-xl text-center shrink-0 min-w-[50px]">
+                            ${match.played ? `${match.p1Sets} - ${match.p2Sets}` : 'VS'}
+                        </div>
+                        <span class="font-extrabold ${match.played && match.p2Sets > match.p1Sets ? 'text-tennis-700' : 'text-slate-800'} flex-1 text-left pl-2 truncate">${match.player2}</span>
+                    </div>
+                    ${match.winner ? `<div class="mt-2 pt-2 border-t border-slate-100 text-center text-[11px] font-extrabold text-tennis-700"><i class="fa-solid fa-crown text-amber-500 mr-1"></i> Vincitore: ${match.winner}</div>` : ''}
+                </div>
+            `;
+        }
+
+        // Tab: Regolamento
+        function renderRegolamentoTab() {
+            const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
+            return `
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                    <div class="flex items-center space-x-3 pb-3 border-b border-slate-100">
+                        <img src="${activeLogo}" alt="Logo Torneo" class="w-11 h-11 rounded-xl object-cover shadow-xs border border-slate-200 shrink-0">
+                        <div>
+                            <h3 class="font-extrabold text-sm text-slate-800">${appState.tournamentName}</h3>
+                            <p class="text-xs text-slate-500">Regolamento ufficiale e criteri di qualificazione</p>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-700 leading-relaxed whitespace-pre-line bg-slate-50 p-4 rounded-xl border border-slate-200/60 font-medium">
+                        ${appState.rulesText}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Tab: Pannello Amministratore
+        function renderAdminTab() {
+            if (appState.currentUserRole !== 'amministratore') {
+                return `<div class="text-center py-10 text-xs text-slate-500">Accesso non autorizzato. Effettua l'accesso come Amministratore.</div>`;
+            }
+
+            const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
+            const currentThemeKey = appState.themeKey || 'sky';
+            const currentHex = appState.customThemeHex || '#0284c7';
+
+            return `
+                <div class="space-y-6">
+                    <!-- Personalizzazione Tonalità & Colori dell'Interfaccia (Solo Amministratore) -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
+                                <i class="fa-solid fa-palette text-tennis-600"></i>
+                                <span>Tonalità & Colori Interfaccia</span>
+                            </h3>
+                            <span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-lg flex items-center space-x-1">
+                                <i class="fa-solid fa-user-shield"></i>
+                                <span>Solo Admin</span>
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Scegli una tonalità per aggiornare istantaneamente l'intestazione superiore, i pulsanti principali, le intestazioni dei gironi, i badge e i bordi.
+                        </p>
+
+                        <!-- Palette Predefinite -->
+                        <div class="grid grid-cols-2 gap-2">
+                            ${Object.entries(THEME_PALETTES).map(([key, pal]) => `
+                                <button type="button" onclick="setPresetTheme('${key}')" class="flex items-center space-x-2.5 p-2.5 rounded-xl border ${currentThemeKey === key ? 'border-tennis-600 bg-tennis-50/70 ring-1 ring-tennis-500' : 'border-slate-200 hover:bg-slate-50'} transition text-left">
+                                    <span class="w-6 h-6 rounded-full shrink-0 shadow-xs border border-white" style="background: linear-gradient(135deg, ${pal[500]}, ${pal[800]});"></span>
+                                    <span class="text-xs font-bold text-slate-800 truncate">${pal.name.split(' ')[0]}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <!-- Selettore Colore Libero -->
+                        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                            <div>
+                                <div class="text-xs font-extrabold text-slate-800">Colore Personalizzato</div>
+                                <div class="text-[10px] text-slate-500">Scegli qualsiasi tonalità libera</div>
+                            </div>
+                            <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
+                                <input type="color" value="${currentHex}" onchange="setCustomThemeColor(this.value)" class="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0">
+                                <span class="text-xs font-mono font-bold text-slate-700 uppercase">${currentHex}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Personalizzazione Logo dell'App (Solo Amministratore) -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
+                                <i class="fa-solid fa-image text-tennis-600"></i>
+                                <span>Logo & Icona dell'App</span>
+                            </h3>
+                            <span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-lg flex items-center space-x-1">
+                                <i class="fa-solid fa-user-shield"></i>
+                                <span>Solo Admin</span>
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Imposta il logo ufficiale del torneo: verrà aggiornato automaticamente nell'intestazione, nell'icona PWA sul telefono, nella scheda del browser e nel regolamento.
+                        </p>
+
+                        <!-- Anteprima + Caricamento File -->
+                        <div class="flex items-center space-x-4 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80">
+                            <img src="${activeLogo}" alt="Anteprima Logo" class="w-16 h-16 rounded-2xl object-cover shadow-md border-2 border-white shrink-0">
+                            <div class="flex-1 space-y-2">
+                                <label class="block w-full cursor-pointer bg-tennis-600 hover:bg-tennis-700 text-white text-center font-bold text-xs py-2.5 px-3 rounded-xl shadow transition">
+                                    <i class="fa-solid fa-upload mr-1.5"></i> Carica Immagine / .ICO
+                                    <input type="file" accept="image/*,.ico" onchange="handleCustomLogoUpload(event)" class="hidden">
+                                </label>
+                                <p class="text-[10px] text-slate-400 text-center">Supporta JPG, PNG, ICO, SVG</p>
+                            </div>
+                        </div>
+
+                        <!-- Loghi Predefiniti Rapidi -->
+                        <div>
+                            <div class="text-[11px] font-bold text-slate-600 mb-2">Oppure scegli un'icona predefinita:</div>
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <button type="button" onclick="setPresetLogo('rackets')" class="flex items-center space-x-2.5 p-2.5 rounded-xl border border-slate-200 hover:border-tennis-500 hover:bg-tennis-50/50 transition text-left">
+                                    <img src="${PRESET_LOGOS.rackets}" class="w-9 h-9 rounded-lg object-cover shrink-0">
+                                    <div>
+                                        <div class="text-xs font-extrabold text-slate-800">Racchette</div>
+                                        <div class="text-[10px] text-slate-500">Verde & Blu</div>
+                                    </div>
+                                </button>
+                                <button type="button" onclick="setPresetLogo('trophy')" class="flex items-center space-x-2.5 p-2.5 rounded-xl border border-slate-200 hover:border-tennis-500 hover:bg-tennis-50/50 transition text-left">
+                                    <img src="${PRESET_LOGOS.trophy}" class="w-9 h-9 rounded-lg object-cover shrink-0">
+                                    <div>
+                                        <div class="text-xs font-extrabold text-slate-800">Trofeo Cup</div>
+                                        <div class="text-[10px] text-slate-500">Blu & Oro</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configura Nuovo Torneo -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
+                            <i class="fa-solid fa-gear text-tennis-600"></i>
+                            <span>Crea / Configura Torneo</span>
+                        </h3>
+                        <form onsubmit="generateNewTournamentStructure(event)" class="space-y-3.5">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Nome Torneo</label>
+                                <input type="text" id="admin-tournament-name" value="${appState.tournamentName}" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500" required>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Numero Giocatori</label>
+                                    <select id="admin-num-players" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                                        <option value="8" ${appState.players.length === 8 ? 'selected' : ''}>8 Giocatori</option>
+                                        <option value="12" ${appState.players.length === 12 ? 'selected' : ''}>12 Giocatori</option>
+                                        <option value="16" ${appState.players.length === 16 ? 'selected' : ''}>16 Giocatori</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Numero Gironi</label>
+                                    <select id="admin-num-groups" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                                        <option value="2">2 Gironi (A, B)</option>
+                                        <option value="4">4 Gironi (A, B, C, D)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs py-3 rounded-xl shadow transition">
+                                Genera Gironi e Calendario
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Gestione Password Ruoli -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
+                            <i class="fa-solid fa-key text-tennis-600"></i>
+                            <span>Modifica Password Ruoli</span>
+                        </h3>
+                        <form onsubmit="updateRolePasswords(event)" class="space-y-3.5">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Nuova Password Editore</label>
+                                <input type="text" id="new-edit-pwd" value="${appState.passwords.editore}" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Nuova Password Amministratore</label>
+                                <input type="text" id="new-admin-pwd" value="${appState.passwords.amministratore}" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500" required>
+                            </div>
+                            <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-3 rounded-xl shadow transition">
+                                Salva Nuove Password
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Modifica Regolamento -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                        <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
+                            <i class="fa-solid fa-file-pen text-tennis-600"></i>
+                            <span>Modifica Testo Regolamento</span>
+                        </h3>
+                        <form onsubmit="saveRules(event)" class="space-y-3.5">
+                            <div>
+                                <textarea id="admin-rules-textarea" rows="6" class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500 leading-relaxed">${appState.rulesText}</textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs py-3 rounded-xl shadow transition">
+                                Salva Regolamento
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Reset Dati -->
+                    <div class="bg-rose-50 border border-rose-200 p-5 rounded-2xl space-y-3">
+                        <h3 class="font-extrabold text-sm text-rose-900">Ripristina Dati Iniziali</h3>
+                        <p class="text-xs text-rose-700 leading-relaxed">Riporta il torneo ai dati dimostrativi originali.</p>
+                        <button onclick="resetToDemoData()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-3 rounded-xl shadow transition">
+                            Ripristina Demo
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize on Load
+        window.onload = function () {
+            loadFromStorage();
+            initPWA();
+            renderApp();
+        };
+    </script>
+</body>
+</html>
