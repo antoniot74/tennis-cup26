@@ -697,7 +697,6 @@
             if (cloudPollInterval) clearInterval(cloudPollInterval);
             if (appState.cloudSyncUrl) {
                 pullStateFromCloud(true);
-                // Check for updates every 8 seconds on all connected smartphones
                 cloudPollInterval = setInterval(() => {
                     pullStateFromCloud(true);
                 }, 8000);
@@ -812,19 +811,16 @@
         function applyAppLogoToAllParts() {
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
 
-            // 1. Header Top-Left Badge
             const headerLogoEl = document.getElementById('header-app-logo');
             if (headerLogoEl) {
                 headerLogoEl.innerHTML = `<img src="${activeLogo}" alt="Logo Torneo" class="w-full h-full object-cover rounded-full">`;
             }
 
-            // 2. Browser Favicon & iOS Home Screen Icon
             const appleTouch = document.getElementById('apple-touch-icon');
             if (appleTouch) appleTouch.setAttribute('href', activeLogo);
             const favicon = document.getElementById('favicon-link');
             if (favicon) favicon.setAttribute('href', activeLogo);
 
-            // 3. Dynamic PWA Web App Manifest
             initPWA();
         }
 
@@ -862,7 +858,7 @@
             }
         }
 
-        // Handle Logo File Upload (JPG, PNG, ICO, SVG, WEBP) with automatic circular crop
+        // Handle Logo File Upload with automatic circular crop
         function handleCustomLogoUpload(event) {
             if (appState.currentUserRole !== 'amministratore') {
                 showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
@@ -1551,19 +1547,7 @@
                 viewHtml = renderAdminView();
             }
 
-            main.innerHTML = viewHtml + renderAppFooter();
-        }
-
-        // Subtle Footer with Copyright & Developer Credits at the bottom of scrollable content
-        function renderAppFooter() {
-            const copyText = appState.copyrightText || '© 2026 Tennis Cup Pro • Tutti i diritti riservati';
-            const devText = appState.developerText || 'Realizzata da [Tuo Nome / Studio]';
-            return `
-                <footer class="mt-8 pt-4 pb-2 border-t border-slate-200/80 text-center space-y-1 select-none">
-                    <p class="text-[11px] font-bold text-slate-600">${devText}</p>
-                    <p class="text-[10px] font-medium text-slate-400">${copyText}</p>
-                </footer>
-            `;
+            main.innerHTML = viewHtml;
         }
 
         // View 1: Gironi & Classifiche
@@ -1804,11 +1788,12 @@
             `;
         }
 
-        // View 4: Regolamento
+        // View 4: Regolamento (Con Crediti & Copyright visibili esclusivamente qui)
         function renderRegolamentoView() {
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
             const copyText = appState.copyrightText || '© 2026 Tennis Cup Pro • Tutti i diritti riservati';
             const devText = appState.developerText || 'Realizzata da [Tuo Nome / Studio]';
+
             return `
                 <div class="space-y-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
@@ -1824,15 +1809,10 @@
                         </div>
                     </div>
 
-                    <!-- Scheda Crediti & Copyright -->
-                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3">
-                        <div class="w-9 h-9 rounded-xl bg-tennis-50 text-tennis-700 flex items-center justify-center shrink-0">
-                            <i class="fa-solid fa-code text-sm"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <div class="text-xs font-extrabold text-slate-800 truncate">${devText}</div>
-                            <div class="text-[11px] text-slate-500 font-medium truncate">${copyText}</div>
-                        </div>
+                    <!-- Crediti & Copyright visibili esclusivamente nella scheda Regole -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs text-center space-y-1">
+                        <p class="text-xs font-bold text-slate-700">${devText}</p>
+                        <p class="text-[10px] font-medium text-slate-400">${copyText}</p>
                     </div>
                 </div>
             `;
