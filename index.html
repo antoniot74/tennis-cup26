@@ -1668,6 +1668,33 @@
                         }
                         if (groupMatches.length === 0) return '';
 
+                        // Ordina gli incontri: prima "In programma" (ordinati per data/ora), poi "Da definire", infine "Conclusi"
+                        groupMatches.sort((a, b) => {
+                            const getPriority = (match) => {
+                                if (!match.played && ((match.date && match.date.trim()) || (match.time && match.time.trim()))) {
+                                    return 1; // In programma (in alto)
+                                }
+                                if (!match.played) {
+                                    return 2; // Da definire
+                                }
+                                return 3; // Conclusa
+                            };
+
+                            const prioA = getPriority(a);
+                            const prioB = getPriority(b);
+
+                            if (prioA !== prioB) return prioA - prioB;
+
+                            // Se entrambi sono "In programma", ordina cronologicamente dal più vicino
+                            if (prioA === 1) {
+                                const dtA = `${a.date || '9999-12-31'} ${a.time || '23:59'}`;
+                                const dtB = `${b.date || '9999-12-31'} ${b.time || '23:59'}`;
+                                return dtA.localeCompare(dtB);
+                            }
+
+                            return 0;
+                        });
+
                         return `
                             <div class="space-y-2.5">
                                 <div class="flex items-center space-x-2">
