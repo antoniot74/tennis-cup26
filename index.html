@@ -1678,22 +1678,42 @@
                                 ${groupMatches.map(m => {
                                     const p1Win = m.played && m.p1Sets > m.p2Sets;
                                     const p2Win = m.played && m.p2Sets > m.p1Sets;
+                                    const isScheduled = !m.played && Boolean((m.date && m.date.trim()) || (m.time && m.time.trim()));
+
+                                    const cardBorderClass = m.played
+                                        ? 'bg-white border-slate-200'
+                                        : isScheduled
+                                            ? 'bg-sky-50/40 border-sky-300'
+                                            : 'bg-white border-dashed border-amber-300';
+
+                                    const statusBadgeClass = m.played
+                                        ? 'bg-tennis-100 text-tennis-800'
+                                        : isScheduled
+                                            ? 'bg-sky-100 text-sky-800 border border-sky-200'
+                                            : 'bg-amber-50 text-amber-700 border border-amber-200';
+
+                                    const statusLabel = m.played
+                                        ? 'Conclusa'
+                                        : isScheduled
+                                            ? 'In programma'
+                                            : 'Da definire';
+
                                     return `
-                                        <div onclick="${canEdit ? `openMatchModal('${m.id}', 'group')` : ''}" class="bg-white p-3.5 rounded-2xl border ${m.played ? 'border-slate-200' : 'border-dashed border-tennis-300'} shadow-xs ${canEdit ? 'cursor-pointer hover:border-tennis-500 active:scale-[0.99]' : ''} transition">
-                                            <div class="flex justify-between items-center text-[10px] text-slate-400 font-semibold mb-2">
+                                        <div onclick="${canEdit ? `openMatchModal('${m.id}', 'group')` : ''}" class="p-3.5 rounded-2xl border ${cardBorderClass} shadow-xs ${canEdit ? 'cursor-pointer hover:border-tennis-500 active:scale-[0.99]' : ''} transition">
+                                            <div class="flex justify-between items-center text-[10px] text-slate-500 font-semibold mb-2">
                                                 <span class="flex items-center space-x-1">
-                                                    <i class="fa-regular fa-clock text-tennis-600"></i>
+                                                    <i class="fa-regular ${isScheduled ? 'fa-calendar-check text-sky-600' : 'fa-clock text-tennis-600'}"></i>
                                                     <span>${m.date || 'Data da definire'} ${m.time ? '• ' + m.time : ''}</span>
                                                 </span>
-                                                <span class="px-2 py-0.5 rounded-md font-bold ${m.played ? 'bg-tennis-100 text-tennis-800' : 'bg-amber-50 text-amber-700'}">
-                                                    ${m.played ? 'Conclusa' : 'Da giocare'}
+                                                <span class="px-2 py-0.5 rounded-md font-bold ${statusBadgeClass}">
+                                                    ${statusLabel}
                                                 </span>
                                             </div>
                                             <div class="flex items-center justify-between gap-2">
                                                 <div class="flex-1 text-right truncate text-xs ${p1Win ? 'font-extrabold text-tennis-700' : 'font-semibold text-slate-700'}">
                                                     ${p1Win ? '<i class="fa-solid fa-crown text-amber-400 mr-1 text-[10px]"></i>' : ''}${m.player1}
                                                 </div>
-                                                <div class="px-2.5 py-1 rounded-xl text-xs font-extrabold shrink-0 ${m.played ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'}">
+                                                <div class="px-2.5 py-1 rounded-xl text-xs font-extrabold shrink-0 ${m.played ? 'bg-slate-900 text-white' : isScheduled ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-500'}">
                                                     ${m.played ? (m.scoreText || `${m.p1Sets}-${m.p2Sets}`) : 'VS'}
                                                 </div>
                                                 <div class="flex-1 text-left truncate text-xs ${p2Win ? 'font-extrabold text-tennis-700' : 'font-semibold text-slate-700'}">
