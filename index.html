@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tennis Cup Pro - Gestione Tornei</title>
+    <title>Tennis Cup 2026 - Gestione Tornei</title>
     <!-- PWA Meta Tags & Fullscreen Support (Android & iOS) -->
     <meta name="theme-color" content="#0369a1">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Tennis Cup Pro">
+    <meta name="apple-mobile-web-app-title" content="Tennis Cup 2026">
     <link id="pwa-manifest" rel="manifest">
     <link id="apple-touch-icon" rel="apple-touch-icon">
     <link id="favicon-link" rel="icon" type="image/png">
@@ -118,7 +118,7 @@
                         <!-- Default / Custom Logo rendered via JS -->
                     </div>
                     <div class="min-w-0">
-                        <h1 id="app-title" class="font-extrabold text-sm tracking-tight leading-tight truncate">Open Tennis Cup 2026</h1>
+                        <h1 id="app-title" class="font-extrabold text-sm tracking-tight leading-tight truncate">Tennis Cup 2026</h1>
                         <div class="flex items-center space-x-1.5 mt-0.5">
                             <span id="role-dot" class="w-2 h-2 rounded-full bg-blue-300 shrink-0"></span>
                             <span id="user-role-badge" class="text-[11px] font-medium text-tennis-100 truncate">Visualizzatore</span>
@@ -406,7 +406,7 @@
             currentUserRole: 'visualizzatore',
             viewerSelectedPlayer: '',
             activeTab: 'gironi',
-            tournamentName: 'Open Tennis Cup 2026',
+            tournamentName: 'Tennis Cup 2026',
             customLogo: PRESET_LOGOS.rackets,
             themeKey: 'sky',
             customThemeHex: '#0284c7',
@@ -819,7 +819,7 @@
                     ? buildPaletteFromHex(appState.customThemeHex)
                     : (THEME_PALETTES[appState.themeKey] || THEME_PALETTES.sky);
                 const manifest = {
-                    name: appState.tournamentName || "Tennis Cup Pro",
+                    name: appState.tournamentName || "Tennis Cup 2026",
                     short_name: "TennisCup",
                     start_url: "./",
                     display: "standalone",
@@ -1455,7 +1455,7 @@
 
             // Update Header Title & Role Badge
             const titleEl = document.getElementById('app-title');
-            if (titleEl) titleEl.textContent = appState.tournamentName || 'Open Tennis Cup 2026';
+            if (titleEl) titleEl.textContent = appState.tournamentName || 'Tennis Cup 2026';
 
             const roleBadge = document.getElementById('user-role-badge');
             const roleDot = document.getElementById('role-dot');
