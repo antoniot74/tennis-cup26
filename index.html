@@ -419,8 +419,6 @@
             viewerSelectedPlayer: '',
             activeTab: 'gironi',
             tournamentName: 'Open Tennis Cup 2026',
-            copyrightText: '© 2026 Tennis Cup Pro • Tutti i diritti riservati',
-            developerText: 'Realizzata da [Tuo Nome / Studio]',
             customLogo: PRESET_LOGOS.rackets,
             themeKey: 'sky',
             customThemeHex: '#0284c7',
@@ -468,7 +466,9 @@
                     { id: 'f1', label: 'Finalissima', player1: 'Vincente SF1', player2: 'Vincente SF2', date: '2026-11-30', time: '18:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
                 ]
             },
-            rulesText: `REGOLAMENTO UFFICIALE DEL TORNEO\n\n1. FORMULA DI GIOCO\nTutti gli incontri si disputano al meglio dei 3 set. Sul punteggio di 6 pari si gioca il tie-break a 7 punti. L'eventuale terzo set viene sostituito da un super tie-break a 10 punti.\n\n2. PUNTEGGI E CLASSIFICA GIRONI\n- Vittoria: 3 punti\n- Sconfitta: 0 punti\nIn caso di parità in classifica si considerano nell'ordine:\na) Scontro diretto\nb) Differenza set vinti/persi\nc) Differenza game vinti/persi\n\n3. FASE FINALE\nAccedono ai Quarti di Finale i migliori classificati di ciascun girone secondo il tabellone incrociato.\n\n4. ORARI E FAIR PLAY\nÈ richiesta la massima puntualità (tolleranza 15 minuti). I risultati vengono inseriti dagli Editori o dall'Amministratore al termine di ogni match.`
+            rulesText: `REGOLAMENTO UFFICIALE DEL TORNEO\n\n1. FORMULA DI GIOCO\nTutti gli incontri si disputano al meglio dei 3 set. Sul punteggio di 6 pari si gioca il tie-break a 7 punti. L'eventuale terzo set viene sostituito da un super tie-break a 10 punti.\n\n2. PUNTEGGI E CLASSIFICA GIRONI\n- Vittoria: 3 punti\n- Sconfitta: 0 punti\nIn caso di parità in classifica si considerano nell'ordine:\na) Scontro diretto\nb) Differenza set vinti/persi\nc) Differenza game vinti/persi\n\n3. FASE FINALE\nAccedono ai Quarti di Finale i migliori classificati di ciascun girone secondo il tabellone incrociato.\n\n4. ORARI E FAIR PLAY\nÈ richiesta la massima puntualità (tolleranza 15 minuti). I risultati vengono inseriti dagli Editori o dall'Amministratore al termine di ogni match.`,
+            authorText: 'Realizzato da Antonio Esposito',
+            copyrightText: '© 2026 Open Tennis Cup. Tutti i diritti riservati.'
         };
 
         let appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -621,8 +621,6 @@
             try {
                 const payloadToSync = {
                     tournamentName: appState.tournamentName,
-                    copyrightText: appState.copyrightText,
-                    developerText: appState.developerText,
                     customLogo: appState.customLogo,
                     themeKey: appState.themeKey,
                     customThemeHex: appState.customThemeHex,
@@ -631,6 +629,8 @@
                     matches: appState.matches,
                     playoffs: appState.playoffs,
                     rulesText: appState.rulesText,
+                    authorText: appState.authorText,
+                    copyrightText: appState.copyrightText,
                     updatedAt: Date.now()
                 };
                 const res = await fetch(endpoint, {
@@ -660,9 +660,7 @@
                 const newHash = JSON.stringify(remoteData.matches) + JSON.stringify(remoteData.players) + JSON.stringify(remoteData.playoffs);
                 const metaChanged = remoteData.tournamentName !== appState.tournamentName ||
                                     remoteData.themeKey !== appState.themeKey ||
-                                    remoteData.rulesText !== appState.rulesText ||
-                                    remoteData.copyrightText !== appState.copyrightText ||
-                                    remoteData.developerText !== appState.developerText;
+                                    remoteData.rulesText !== appState.rulesText;
 
                 if (newHash !== lastCloudHash || metaChanged) {
                     lastCloudHash = newHash;
@@ -697,6 +695,7 @@
             if (cloudPollInterval) clearInterval(cloudPollInterval);
             if (appState.cloudSyncUrl) {
                 pullStateFromCloud(true);
+                // Check for updates every 8 seconds on all connected smartphones
                 cloudPollInterval = setInterval(() => {
                     pullStateFromCloud(true);
                 }, 8000);
@@ -811,16 +810,19 @@
         function applyAppLogoToAllParts() {
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
 
+            // 1. Header Top-Left Badge
             const headerLogoEl = document.getElementById('header-app-logo');
             if (headerLogoEl) {
                 headerLogoEl.innerHTML = `<img src="${activeLogo}" alt="Logo Torneo" class="w-full h-full object-cover rounded-full">`;
             }
 
+            // 2. Browser Favicon & iOS Home Screen Icon
             const appleTouch = document.getElementById('apple-touch-icon');
             if (appleTouch) appleTouch.setAttribute('href', activeLogo);
             const favicon = document.getElementById('favicon-link');
             if (favicon) favicon.setAttribute('href', activeLogo);
 
+            // 3. Dynamic PWA Web App Manifest
             initPWA();
         }
 
@@ -858,7 +860,7 @@
             }
         }
 
-        // Handle Logo File Upload with automatic circular crop
+        // Handle Logo File Upload (JPG, PNG, ICO, SVG, WEBP) with automatic resizing for storage safety
         function handleCustomLogoUpload(event) {
             if (appState.currentUserRole !== 'amministratore') {
                 showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
@@ -872,7 +874,7 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const size = 256;
+                    const size = 256; // Optimal crisp icon size for PWA, header & localStorage
                     canvas.width = size;
                     canvas.height = size;
                     const ctx = canvas.getContext('2d');
@@ -890,6 +892,7 @@
                     showToast('Nuovo logo applicato su tutta l\'app!', 'success');
                 };
                 img.onerror = function() {
+                    // Fallback directly for .ico or special formats
                     appState.customLogo = e.target.result;
                     saveToStorage();
                     applyAppLogoToAllParts();
@@ -959,6 +962,7 @@
             }
         }
 
+        // Manual save button handler
         function saveAllChangesManual() {
             saveToStorage();
             if (appState.cloudSyncUrl && appState.currentUserRole !== 'visualizzatore') {
@@ -997,6 +1001,7 @@
             showToast('Sincronizzazione Cloud disattivata.', 'info');
         }
 
+        // Login & Modal Controller Functions
         function openLoginModal() {
             const modal = document.getElementById('login-modal');
             if (modal) modal.classList.remove('hidden');
@@ -1066,6 +1071,20 @@
             }
         }
 
+        function toggleAdminPwdVisibility(inputId, iconId) {
+            const pwdInput = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(iconId);
+            if (!pwdInput) return;
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                if (eyeIcon) eyeIcon.className = 'fa-solid fa-eye-slash text-xs';
+            } else {
+                pwdInput.type = 'password';
+                if (eyeIcon) eyeIcon.className = 'fa-solid fa-eye text-xs';
+            }
+        }
+
+        // Match Editor Modal
         function openMatchModal(matchId, stageType = 'group') {
             if (appState.currentUserRole === 'visualizzatore') {
                 showToast('Accesso riservato a Editori e Amministratori per modificare i risultati.', 'info');
@@ -1234,6 +1253,7 @@
             showToast('Quarti di finale generati con successo dalle classifiche!', 'success');
         }
 
+        // Admin Tournament Generator
         function generateNewTournamentStructure(event) {
             event.preventDefault();
             if (appState.currentUserRole !== 'amministratore') return;
@@ -1427,20 +1447,10 @@
             event.preventDefault();
             if (appState.currentUserRole !== 'amministratore') return;
             appState.rulesText = document.getElementById('admin-rules-textarea').value;
+            appState.authorText = document.getElementById('admin-author-input').value;
+            appState.copyrightText = document.getElementById('admin-copyright-input').value;
             saveToStorage();
-            showToast('Regolamento aggiornato con successo!', 'success');
-        }
-
-        function saveCreditsAdmin(event) {
-            event.preventDefault();
-            if (appState.currentUserRole !== 'amministratore') return;
-            const devInput = document.getElementById('admin-developer-text');
-            const copyInput = document.getElementById('admin-copyright-text');
-            appState.developerText = devInput ? devInput.value.trim() : '';
-            appState.copyrightText = copyInput ? copyInput.value.trim() : '';
-            saveToStorage();
-            renderApp();
-            showToast('Copyright e autore aggiornati con successo!', 'success');
+            showToast('Regolamento e crediti aggiornati con successo!', 'success');
         }
 
         function resetToDemoData() {
@@ -1534,20 +1544,17 @@
             const main = document.getElementById('main-content');
             if (!main) return;
 
-            let viewHtml = '';
             if (appState.activeTab === 'gironi') {
-                viewHtml = renderGironiView();
+                main.innerHTML = renderGironiView();
             } else if (appState.activeTab === 'calendario') {
-                viewHtml = renderCalendarioView();
+                main.innerHTML = renderCalendarioView();
             } else if (appState.activeTab === 'fasefinale') {
-                viewHtml = renderFaseFinaleView();
+                main.innerHTML = renderFaseFinaleView();
             } else if (appState.activeTab === 'regolamento') {
-                viewHtml = renderRegolamentoView();
+                main.innerHTML = renderRegolamentoView();
             } else if (appState.activeTab === 'admin' && role === 'amministratore') {
-                viewHtml = renderAdminView();
+                main.innerHTML = renderAdminView();
             }
-
-            main.innerHTML = viewHtml;
         }
 
         // View 1: Gironi & Classifiche
@@ -1788,12 +1795,9 @@
             `;
         }
 
-        // View 4: Regolamento (Con Crediti & Copyright visibili esclusivamente qui)
+        // View 4: Regolamento & Copyright (Crediti visibili esclusivamente qui)
         function renderRegolamentoView() {
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
-            const copyText = appState.copyrightText || '© 2026 Tennis Cup Pro • Tutti i diritti riservati';
-            const devText = appState.developerText || 'Realizzata da [Tuo Nome / Studio]';
-
             return `
                 <div class="space-y-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
@@ -1810,9 +1814,9 @@
                     </div>
 
                     <!-- Crediti & Copyright visibili esclusivamente nella scheda Regole -->
-                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs text-center space-y-1">
-                        <p class="text-xs font-bold text-slate-700">${devText}</p>
-                        <p class="text-[10px] font-medium text-slate-400">${copyText}</p>
+                    <div class="bg-slate-100/80 p-4 rounded-2xl border border-slate-200 text-center space-y-1">
+                        <div class="text-xs font-bold text-slate-700">${appState.authorText || 'Realizzato da Antonio Esposito'}</div>
+                        <div class="text-[11px] text-slate-500 font-medium">${appState.copyrightText || '© 2026 Open Tennis Cup. Tutti i diritti riservati.'}</div>
                     </div>
                 </div>
             `;
@@ -1848,7 +1852,12 @@
                         <form onsubmit="saveCloudSyncConfig(event)" class="space-y-3">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-700 mb-1">URL Database Condiviso (Firebase Realtime DB)</label>
-                                <input type="url" id="admin-cloud-url" value="${appState.cloudSyncUrl || ''}" placeholder="https://tuo-progetto-default-rtdb.firebaseio.com" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                                <div class="relative">
+                                    <input type="password" id="admin-cloud-url" value="${appState.cloudSyncUrl || ''}" placeholder="https://tuo-progetto-default-rtdb.firebaseio.com" class="w-full text-xs p-3 pr-10 rounded-xl border border-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                                    <button type="button" onclick="toggleAdminPwdVisibility('admin-cloud-url', 'admin-cloud-eye')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                        <i id="admin-cloud-eye" class="fa-solid fa-eye text-xs"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <button type="submit" class="bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs py-2.5 rounded-xl shadow transition flex items-center justify-center space-x-1.5">
@@ -1996,7 +2005,7 @@
                         </div>
                     </div>
 
-                    <!-- Gestione Password Ruoli -->
+                    <!-- Gestione Password Ruoli con pulsante visibilità password (occhio) -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                         <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
                             <i class="fa-solid fa-key text-tennis-600"></i>
@@ -2005,11 +2014,21 @@
                         <form onsubmit="updateRolePasswords(event)" class="space-y-3.5">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1">Nuova Password Editore</label>
-                                <input type="text" id="new-edit-pwd" value="${appState.passwords.editore}" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500" required>
+                                <div class="relative">
+                                    <input type="password" id="new-edit-pwd" value="${appState.passwords.editore}" class="w-full text-xs p-3 pr-10 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500" required>
+                                    <button type="button" onclick="toggleAdminPwdVisibility('new-edit-pwd', 'admin-edit-eye')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                        <i id="admin-edit-eye" class="fa-solid fa-eye text-xs"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1">Nuova Password Amministratore</label>
-                                <input type="text" id="new-admin-pwd" value="${appState.passwords.amministratore}" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500" required>
+                                <div class="relative">
+                                    <input type="password" id="new-admin-pwd" value="${appState.passwords.amministratore}" class="w-full text-xs p-3 pr-10 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500" required>
+                                    <button type="button" onclick="toggleAdminPwdVisibility('new-admin-pwd', 'admin-admin-eye')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                        <i id="admin-admin-eye" class="fa-solid fa-eye text-xs"></i>
+                                    </button>
+                                </div>
                             </div>
                             <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-3 rounded-xl shadow transition">
                                 Salva Nuove Password
@@ -2017,39 +2036,27 @@
                         </form>
                     </div>
 
-                    <!-- Modifica Regolamento -->
+                    <!-- Modifica Regolamento & Crediti -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                         <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
                             <i class="fa-solid fa-file-pen text-tennis-600"></i>
-                            <span>Modifica Testo Regolamento</span>
+                            <span>Modifica Regolamento & Crediti</span>
                         </h3>
                         <form onsubmit="saveRules(event)" class="space-y-3.5">
                             <div>
-                                <textarea id="admin-rules-textarea" rows="6" class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500 leading-relaxed">${appState.rulesText}</textarea>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Testo Regolamento</label>
+                                <textarea id="admin-rules-textarea" rows="5" class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500 leading-relaxed">${appState.rulesText}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Autore / Sviluppatore</label>
+                                <input type="text" id="admin-author-input" value="${appState.authorText || 'Realizzato da Antonio Esposito'}" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Testo Copyright</label>
+                                <input type="text" id="admin-copyright-input" value="${appState.copyrightText || '© 2026 Open Tennis Cup. Tutti i diritti riservati.'}" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500" required>
                             </div>
                             <button type="submit" class="w-full bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs py-3 rounded-xl shadow transition">
-                                Salva Regolamento
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Modifica Copyright & Autore -->
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-                        <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
-                            <i class="fa-regular fa-copyright text-tennis-600"></i>
-                            <span>Copyright & Autore App</span>
-                        </h3>
-                        <form onsubmit="saveCreditsAdmin(event)" class="space-y-3.5">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">Realizzata da (Autore / Organizzazione)</label>
-                                <input type="text" id="admin-developer-text" value="${(appState.developerText || '').replace(/"/g, '&quot;')}" placeholder="Es. Realizzata da Mario Rossi" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">Nota di Copyright</label>
-                                <input type="text" id="admin-copyright-text" value="${(appState.copyrightText || '').replace(/"/g, '&quot;')}" placeholder="Es. © 2026 Tennis Cup Pro - Tutti i diritti riservati" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500">
-                            </div>
-                            <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-3 rounded-xl shadow transition">
-                                Salva Crediti & Copyright
+                                Salva Regolamento e Crediti
                             </button>
                         </form>
                     </div>
