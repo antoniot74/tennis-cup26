@@ -384,9 +384,49 @@
                 </form>
             </div>
         </div>
+
+        <!-- App Update & Reinstall Required Banner / Modal -->
+        <div id="app-update-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl border-2 border-amber-400 space-y-4 text-center">
+                <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 mx-auto flex items-center justify-center text-2xl shadow-xs">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                </div>
+                <div class="space-y-1.5">
+                    <span class="inline-block bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
+                        Nuova Versione Disponibile
+                    </span>
+                    <h3 class="text-base font-extrabold text-slate-900">Aggiornamento Richiesto</h3>
+                    <p id="app-update-version-text" class="text-xs text-slate-600 leading-relaxed">
+                        È stata rilasciata una nuova versione dell'applicazione con modifiche alla struttura.
+                    </p>
+                </div>
+                <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-left space-y-2 text-[11px] text-slate-700">
+                    <div class="font-bold text-slate-800 flex items-center space-x-1.5">
+                        <i class="fa-solid fa-mobile-screen-button text-tennis-600"></i>
+                        <span>Come aggiornare il pacchetto installato:</span>
+                    </div>
+                    <ol class="list-decimal list-inside space-y-1 text-slate-600">
+                        <li>Premi il pulsante <strong>"Aggiorna Ora"</strong> qui sotto per scaricare la nuova struttura.</li>
+                        <li>Se hai l'app salvata sulla Home, rimuovi la vecchia icona e seleziona <strong>"Aggiungi a schermata Home"</strong> (o <strong>"Installa"</strong>) per aggiornare il pacchetto.</li>
+                    </ol>
+                </div>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button type="button" onclick="dismissUpdateModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-3 rounded-xl transition">
+                        Più tardi
+                    </button>
+                    <button type="button" onclick="confirmAppUpdateAndReinstall()" class="bg-tennis-600 hover:bg-tennis-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-md transition flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>Aggiorna Ora</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Versione corrente della struttura dell'applicazione
+        const APP_VERSION = '2.1.0';
+
         // Preset SVG Logos (Encoded Data URIs)
         const PRESET_LOGOS = {
             rackets: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#84cc16"/><stop offset="50%" stop-color="#10b981"/><stop offset="100%" stop-color="#0284c7"/></linearGradient></defs><circle cx="100" cy="100" r="100" fill="url(#bg)"/><g stroke="#ffffff" stroke-width="6" fill="none" stroke-linecap="round"><ellipse cx="75" cy="75" rx="28" ry="38" transform="rotate(-45 75 75)"/><line x1="95" y1="95" x2="145" y2="145" stroke-width="10"/><ellipse cx="125" cy="75" rx="28" ry="38" transform="rotate(45 125 75)"/><line x1="105" y1="95" x2="55" y2="145" stroke-width="10"/></g><circle cx="100" cy="105" r="18" fill="#d9f99d" stroke="#ffffff" stroke-width="3"/></svg>`),
@@ -435,6 +475,7 @@
 
         // Default Application State with Passwords, Custom Logo & Demo Tournament
         const DEFAULT_STATE = {
+            appVersion: APP_VERSION,
             currentUserRole: 'visualizzatore',
             viewerSelectedPlayer: '',
             activeTab: 'gironi',
@@ -480,7 +521,7 @@
                     { id: 'f1', label: 'Finalissima (1° - 2° Posto)', player1: 'Vincente Semifinale 1', player2: 'Vincente Semifinale 2', date: '2026-11-30', time: '18:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
                 ]
             },
-            rulesText: `REGOLAMENTO UFFICIALE DEL TORNEO\n\n1. FORMULA DI GIOCO\nTutti gli incontri si disputano al meglio dei 3 set.\n\n2. FASE FINALE\nI primi 2 classificati di ciascun girone accedono direttamente alle Semifinali (Semifinale 1: 1° Girone A vs 2° Girone B; Semifinale 2: 1° Girone B vs 2° Girone A).`,
+            rulesText: `REGOLAMENTO UFFICIALE DEL TORNEO\n\n1. FORMULA DI GIOCO\nTutti gli incontri si disputano al meglio dei 3 set. Sul punteggio di 6 pari si gioca il tie-break a 7 punti. L'eventuale terzo set viene sostituito da un super tie-break a 10 punti.\n\n2. PUNTEGGI E CLASSIFICA GIRONI\n- Vittoria: 3 punti\n- Sconfitta: 0 punti\nIn caso di parità in classifica si considerano nell'ordine:\na) Scontro diretto\nb) Differenza set vinti/persi\nc) Differenza game vinti/persi\n\n3. FASE FINALE\nAccedono direttamente alle Semifinali i primi 2 classificati di ciascun girone (1° Girone A vs 2° Girone B e 1° Girone B vs 2° Girone A). I vincitori disputano la Finalissima per il 1° e 2° posto.\n\n4. ORARI E FAIR PLAY\nÈ richiesta la massima puntualità (tolleranza 15 minuti). I risultati vengono inseriti dagli Editori o dall'Amministratore al termine di ogni match.`,
             authorText: 'Realizzato da Antonio Esposito',
             copyrightText: '© 2026 Open Tennis Cup. Tutti i diritti riservati.'
         };
@@ -627,36 +668,37 @@
         }
 
         // Push current tournament state to Cloud (Only when Editore or Amministratore saves changes)
-        // Normalize playoffs structure to ensure no quarterfinals exist and exact semifinal/final labels are used
-        function normalizePlayoffsState() {
-            if (!appState.playoffs) {
-                appState.playoffs = JSON.parse(JSON.stringify(DEFAULT_STATE.playoffs));
-                return;
-            }
-            if (appState.playoffs.quarterfinals) {
-                delete appState.playoffs.quarterfinals;
-            }
-            if (!Array.isArray(appState.playoffs.semifinals) || appState.playoffs.semifinals.length < 2) {
-                appState.playoffs.semifinals = JSON.parse(JSON.stringify(DEFAULT_STATE.playoffs.semifinals));
-            } else {
-                const sf1 = appState.playoffs.semifinals[0];
-                const sf2 = appState.playoffs.semifinals[1];
-                sf1.label = 'Semifinale 1';
-                if (!sf1.player1 || sf1.player1.startsWith('Vincente Q')) sf1.player1 = '1° Girone A';
-                if (!sf1.player2 || sf1.player2.startsWith('Vincente Q')) sf1.player2 = '2° Girone B';
+        async function pushStateToCloud() {
+            const endpoint = getNormalizedCloudEndpoint(appState.cloudSyncUrl);
+            if (!endpoint) return;
+            if (appState.currentUserRole === 'visualizzatore') return;
 
-                sf2.label = 'Semifinale 2';
-                if (!sf2.player1 || sf2.player1.startsWith('Vincente Q')) sf2.player1 = '1° Girone B';
-                if (!sf2.player2 || sf2.player2.startsWith('Vincente Q')) sf2.player2 = '2° Girone A';
-            }
-
-            if (!Array.isArray(appState.playoffs.final) || appState.playoffs.final.length < 1) {
-                appState.playoffs.final = JSON.parse(JSON.stringify(DEFAULT_STATE.playoffs.final));
-            } else {
-                const fin = appState.playoffs.final[0];
-                fin.label = 'Finalissima (1° - 2° Posto)';
-                if (!fin.player1 || fin.player1 === 'Vincente SF1') fin.player1 = 'Vincente Semifinale 1';
-                if (!fin.player2 || fin.player2 === 'Vincente SF2') fin.player2 = 'Vincente Semifinale 2';
+            try {
+                const payloadToSync = {
+                    appVersion: appState.appVersion || APP_VERSION,
+                    tournamentName: appState.tournamentName,
+                    customLogo: appState.customLogo,
+                    themeKey: appState.themeKey,
+                    customThemeHex: appState.customThemeHex,
+                    passwords: appState.passwords,
+                    players: appState.players,
+                    matches: appState.matches,
+                    playoffs: appState.playoffs,
+                    rulesText: appState.rulesText,
+                    authorText: appState.authorText,
+                    copyrightText: appState.copyrightText,
+                    updatedAt: Date.now()
+                };
+                const res = await fetch(endpoint, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payloadToSync)
+                });
+                if (res.ok) {
+                    lastCloudHash = JSON.stringify(payloadToSync.matches) + JSON.stringify(payloadToSync.players) + JSON.stringify(payloadToSync.playoffs);
+                }
+            } catch (e) {
+                console.warn("Cloud push warning: Offline or connection blocked.", e);
             }
         }
 
@@ -674,7 +716,8 @@
                 const newHash = JSON.stringify(remoteData.matches) + JSON.stringify(remoteData.players) + JSON.stringify(remoteData.playoffs);
                 const metaChanged = remoteData.tournamentName !== appState.tournamentName ||
                                     remoteData.themeKey !== appState.themeKey ||
-                                    remoteData.rulesText !== appState.rulesText;
+                                    remoteData.rulesText !== appState.rulesText ||
+                                    (remoteData.appVersion && remoteData.appVersion !== appState.appVersion);
 
                 if (newHash !== lastCloudHash || metaChanged) {
                     lastCloudHash = newHash;
@@ -693,6 +736,7 @@
 
                     localStorage.setItem('tennis_cup_pro_state_v2', JSON.stringify(appState));
                     renderApp();
+                    checkAppVersionUpdate();
                     if (!silent) showToast('Dati aggiornati dal server!', 'success');
                 } else if (!silent) {
                     showToast('Torneo già aggiornato all\'ultima versione.', 'info');
@@ -710,7 +754,6 @@
             if (cloudPollInterval) clearInterval(cloudPollInterval);
             if (appState.cloudSyncUrl) {
                 pullStateFromCloud(true);
-                // Check for updates every 8 seconds on all connected smartphones
                 cloudPollInterval = setInterval(() => {
                     pullStateFromCloud(true);
                 }, 8000);
@@ -825,19 +868,16 @@
         function applyAppLogoToAllParts() {
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
 
-            // 1. Header Top-Left Badge
             const headerLogoEl = document.getElementById('header-app-logo');
             if (headerLogoEl) {
                 headerLogoEl.innerHTML = `<img src="${activeLogo}" alt="Logo Torneo" class="w-full h-full object-cover rounded-full">`;
             }
 
-            // 2. Browser Favicon & iOS Home Screen Icon
             const appleTouch = document.getElementById('apple-touch-icon');
             if (appleTouch) appleTouch.setAttribute('href', activeLogo);
             const favicon = document.getElementById('favicon-link');
             if (favicon) favicon.setAttribute('href', activeLogo);
 
-            // 3. Dynamic PWA Web App Manifest
             initPWA();
         }
 
@@ -875,7 +915,7 @@
             }
         }
 
-        // Handle Logo File Upload (JPG, PNG, ICO, SVG, WEBP) with automatic resizing for storage safety
+        // Handle Logo File Upload
         function handleCustomLogoUpload(event) {
             if (appState.currentUserRole !== 'amministratore') {
                 showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
@@ -889,7 +929,7 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const size = 256; // Optimal crisp icon size for PWA, header & localStorage
+                    const size = 256;
                     canvas.width = size;
                     canvas.height = size;
                     const ctx = canvas.getContext('2d');
@@ -907,7 +947,6 @@
                     showToast('Nuovo logo applicato su tutta l\'app!', 'success');
                 };
                 img.onerror = function() {
-                    // Fallback directly for .ico or special formats
                     appState.customLogo = e.target.result;
                     saveToStorage();
                     applyAppLogoToAllParts();
@@ -956,6 +995,88 @@
             }
         }
 
+        // Normalizza la struttura del tabellone eliminando vecchi quarti o riferimenti Q1/Q2
+        function normalizePlayoffsState() {
+            if (!appState.playoffs || typeof appState.playoffs !== 'object') {
+                appState.playoffs = JSON.parse(JSON.stringify(DEFAULT_STATE.playoffs));
+                return;
+            }
+            if (appState.playoffs.quarterfinals) {
+                delete appState.playoffs.quarterfinals;
+            }
+            if (!Array.isArray(appState.playoffs.semifinals) || appState.playoffs.semifinals.length !== 2) {
+                appState.playoffs.semifinals = JSON.parse(JSON.stringify(DEFAULT_STATE.playoffs.semifinals));
+            } else {
+                const sf1 = appState.playoffs.semifinals[0];
+                const sf2 = appState.playoffs.semifinals[1];
+                if (!sf1.player1 || sf1.player1.includes('Q1') || sf1.player1.includes('Vincente 1')) sf1.player1 = '1° Girone A';
+                if (!sf1.player2 || sf1.player2.includes('Q2') || sf1.player2.includes('Q4') || sf1.player2.includes('Secondo 2')) sf1.player2 = '2° Girone B';
+                if (!sf2.player1 || sf2.player1.includes('Q2') || sf2.player1.includes('Q3') || sf2.player1.includes('Vincente 2')) sf2.player1 = '1° Girone B';
+                if (!sf2.player2 || sf2.player2.includes('Q3') || sf2.player2.includes('Q4') || sf2.player2.includes('Secondo 1')) sf2.player2 = '2° Girone A';
+            }
+            if (!Array.isArray(appState.playoffs.final) || appState.playoffs.final.length !== 1) {
+                appState.playoffs.final = JSON.parse(JSON.stringify(DEFAULT_STATE.playoffs.final));
+            } else {
+                const f1 = appState.playoffs.final[0];
+                f1.label = 'Finalissima (1° - 2° Posto)';
+                if (!f1.player1 || f1.player1 === 'Vincente SF1') f1.player1 = 'Vincente Semifinale 1';
+                if (!f1.player2 || f1.player2 === 'Vincente SF2') f1.player2 = 'Vincente Semifinale 2';
+            }
+        }
+
+        // Controlla se la struttura dell'App è stata aggiornata e richiede reinstallazione pacchetto
+        function checkAppVersionUpdate() {
+            const installedVer = localStorage.getItem('tennis_cup_pro_installed_version');
+            const targetVer = appState.appVersion || APP_VERSION;
+
+            if (!installedVer) {
+                localStorage.setItem('tennis_cup_pro_installed_version', targetVer);
+                return;
+            }
+
+            if (installedVer !== targetVer) {
+                const modal = document.getElementById('app-update-modal');
+                const verText = document.getElementById('app-update-version-text');
+                if (verText) {
+                    verText.innerHTML = `È disponibile la nuova versione <strong>v${targetVer}</strong> (installata: v${installedVer}) con aggiornamenti alla struttura dell'applicazione.`;
+                }
+                if (modal) modal.classList.remove('hidden');
+            }
+        }
+
+        function dismissUpdateModal() {
+            const modal = document.getElementById('app-update-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        async function confirmAppUpdateAndReinstall() {
+            const targetVersion = appState.appVersion || APP_VERSION;
+            localStorage.setItem('tennis_cup_pro_installed_version', targetVersion);
+            dismissUpdateModal();
+
+            if (deferredPrompt) {
+                await triggerPwaInstall();
+            } else {
+                showToast('Aggiornamento pacchetto avviato! Aggiungi nuovamente l\'app alla schermata Home.', 'info');
+            }
+            setTimeout(() => {
+                forceAppCodeReload();
+            }, 900);
+        }
+
+        function publishNewAppVersionAlert() {
+            if (appState.currentUserRole !== 'amministratore') return;
+            const currentVer = (appState.appVersion || APP_VERSION).split('.');
+            const patch = (parseInt(currentVer[2], 10) || 0) + 1;
+            const nextVer = `${currentVer[0] || '2'}.${currentVer[1] || '1'}.${patch}`;
+
+            appState.appVersion = nextVer;
+            localStorage.setItem('tennis_cup_pro_installed_version', nextVer);
+            saveToStorage();
+            renderApp();
+            showToast(`Notifica aggiornamento v${nextVer} inviata a tutti i dispositivi!`, 'success');
+        }
+
         // Storage & Synchronization
         function loadFromStorage() {
             const saved = localStorage.getItem('tennis_cup_pro_state_v2');
@@ -964,11 +1085,11 @@
                     const parsed = JSON.parse(saved);
                     appState = Object.assign({}, DEFAULT_STATE, parsed);
                     if (!appState.customLogo) appState.customLogo = PRESET_LOGOS.rackets;
+                    normalizePlayoffsState();
                 } catch (e) {
                     console.error("Error reading storage:", e);
                 }
             }
-            normalizePlayoffsState();
         }
 
         function saveToStorage() {
@@ -1014,7 +1135,7 @@
             secretLoginTapCount = 0;
             saveToStorage();
             renderApp();
-            showToast('Sincronizzazione Cloud disattivata.', 'info');
+            showToast('Sei tornato alla modalità Visualizzatore.', 'info');
         }
 
         // Login & Modal Controller Functions
@@ -1221,8 +1342,8 @@
             const s = appState.playoffs.semifinals;
             const f = appState.playoffs.final;
 
-            if (f[0]) f[0].player1 = s[0].winner || 'Vincente Semifinale 1';
-            if (f[0]) f[0].player2 = s[1].winner || 'Vincente Semifinale 2';
+            if (f[0] && s[0]) f[0].player1 = s[0].winner || 'Vincente Semifinale 1';
+            if (f[0] && s[1]) f[0].player2 = s[1].winner || 'Vincente Semifinale 2';
         }
 
         function generateSemifinalsFromStandings() {
@@ -1233,7 +1354,7 @@
 
             const groups = [...new Set(appState.players.map(p => p.group))].sort();
             if (groups.length < 2) {
-                showToast('Servono almeno 2 gironi per generare la fase finale.', 'info');
+                showToast('Servono almeno 2 gironi per generare le semifinali.', 'info');
                 return;
             }
 
@@ -1256,7 +1377,7 @@
             updatePlayoffProgression();
             saveToStorage();
             renderApp();
-            showToast('Semifinali popolate con successo dalle classifiche dei gironi!', 'success');
+            showToast('Semifinali generate con successo dai primi 2 classificati dei gironi!', 'success');
         }
 
         // Admin Tournament Generator
@@ -1356,11 +1477,13 @@
             });
 
             ['semifinals', 'final'].forEach(stage => {
-                appState.playoffs[stage].forEach(match => {
-                    if (match.player1 === oldName) match.player1 = newName;
-                    if (match.player2 === oldName) match.player2 = newName;
-                    if (match.winner === oldName) match.winner = newName;
-                });
+                if (appState.playoffs[stage]) {
+                    appState.playoffs[stage].forEach(match => {
+                        if (match.player1 === oldName) match.player1 = newName;
+                        if (match.player2 === oldName) match.player2 = newName;
+                        if (match.winner === oldName) match.winner = newName;
+                    });
+                }
             });
 
             if (appState.viewerSelectedPlayer === oldName) {
@@ -1668,16 +1791,15 @@
                         }
                         if (groupMatches.length === 0) return '';
 
-                        // Ordina gli incontri: prima "In programma" (ordinati per data/ora), poi "Da definire", infine "Conclusi"
                         groupMatches.sort((a, b) => {
                             const getPriority = (match) => {
                                 if (!match.played && ((match.date && match.date.trim()) || (match.time && match.time.trim()))) {
-                                    return 1; // In programma (in alto)
+                                    return 1;
                                 }
                                 if (!match.played) {
-                                    return 2; // Da definire
+                                    return 2;
                                 }
-                                return 3; // Conclusa
+                                return 3;
                             };
 
                             const prioA = getPriority(a);
@@ -1685,7 +1807,6 @@
 
                             if (prioA !== prioB) return prioA - prioB;
 
-                            // Se entrambi sono "In programma", ordina cronologicamente dal più vicino
                             if (prioA === 1) {
                                 const dtA = `${a.date || '9999-12-31'} ${a.time || '23:59'}`;
                                 const dtB = `${b.date || '9999-12-31'} ${b.time || '23:59'}`;
@@ -1757,7 +1878,7 @@
             `;
         }
 
-        // View 3: Tabellone Fase Finale
+        // View 3: Tabellone Fase Finale (Solo Semifinali e Finalissima 1°-2° Posto)
         function renderFaseFinaleView() {
             const canEdit = appState.currentUserRole !== 'visualizzatore';
             const isAdmin = appState.currentUserRole === 'amministratore';
@@ -1814,7 +1935,7 @@
                         </div>
                     ` : ''}
 
-                    <!-- Finalissima (1° - 2° Posto) -->
+                    <!-- Finalissima -->
                     <div class="space-y-2">
                         <div class="text-[11px] font-extrabold uppercase text-amber-600 tracking-wider flex items-center space-x-1.5">
                             <i class="fa-solid fa-star"></i>
@@ -1825,7 +1946,7 @@
 
                     <!-- Semifinali -->
                     <div class="space-y-2">
-                        <div class="text-[11px] font-extrabold uppercase text-tennis-700 tracking-wider">Semifinali</div>
+                        <div class="text-[11px] font-extrabold uppercase text-tennis-700 tracking-wider">Semifinali (Primi 2 per Girone)</div>
                         <div class="grid grid-cols-1 gap-2.5">
                             ${appState.playoffs.semifinals.map(s => renderKnockoutCard(s, 'semifinal')).join('')}
                         </div>
@@ -1834,7 +1955,7 @@
             `;
         }
 
-        // View 4: Regolamento & Copyright (Crediti visibili esclusivamente qui)
+        // View 4: Regolamento & Copyright
         function renderRegolamentoView() {
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
             return `
@@ -1852,7 +1973,6 @@
                         </div>
                     </div>
 
-                    <!-- Crediti & Copyright visibili esclusivamente nella scheda Regole -->
                     <div class="bg-slate-100/80 p-4 rounded-2xl border border-slate-200 text-center space-y-1">
                         <div class="text-xs font-bold text-slate-700">${appState.authorText || 'Realizzato da Antonio Esposito'}</div>
                         <div class="text-[11px] text-slate-500 font-medium">${appState.copyrightText || '© 2026 Open Tennis Cup. Tutti i diritti riservati.'}</div>
@@ -1861,7 +1981,7 @@
             `;
         }
 
-        // View 5: Admin Settings Panel (Exclusive to Amministratore)
+        // View 5: Admin Settings Panel
         function renderAdminView() {
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
             return `
@@ -1886,7 +2006,7 @@
                             </span>
                         </div>
                         <p class="text-xs text-slate-600 leading-relaxed">
-                            Per far vedere automaticamente i risultati su <strong>tutti gli smartphone</strong>, incolla l'URL gratuito di un database <strong>Firebase Realtime Database</strong> (es. <code>https://tuo-torneo-default-rtdb.firebaseio.com</code>) e invia il link condiviso ai partecipanti.
+                            Per far vedere automaticamente i risultati su <strong>tutti gli smartphone</strong>, incolla l'URL gratuito di un database <strong>Firebase Realtime Database</strong> e invia il link condiviso ai partecipanti.
                         </p>
                         <form onsubmit="saveCloudSyncConfig(event)" class="space-y-3">
                             <div>
@@ -1911,7 +2031,7 @@
                         </form>
                     </div>
 
-                    <!-- Logo & Icona dell'App (Solo Amministratore) -->
+                    <!-- Logo & Icona dell'App -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                         <div class="flex items-center justify-between">
                             <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
@@ -1944,7 +2064,7 @@
                         </div>
                     </div>
 
-                    <!-- Tonalità & Colori Interfaccia (Solo Amministratore) -->
+                    <!-- Tonalità & Colori Interfaccia -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                         <div class="flex items-center justify-between">
                             <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
@@ -2001,7 +2121,7 @@
                         </form>
                     </div>
 
-                    <!-- Gestione Giocatori Partecipanti (Solo Amministratore) -->
+                    <!-- Gestione Giocatori Partecipanti -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                         <div class="flex items-center justify-between">
                             <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
@@ -2014,10 +2134,9 @@
                             </span>
                         </div>
                         <p class="text-xs text-slate-500 leading-relaxed">
-                            Modifica direttamente i nomi dei partecipanti (verranno aggiornati automaticamente in classifiche, calendario e tabellone) oppure aggiungi un nuovo giocatore.
+                            Modifica direttamente i nomi dei partecipanti oppure aggiungi un nuovo giocatore.
                         </p>
 
-                        <!-- Aggiungi Nuovo Giocatore -->
                         <form onsubmit="addNewPlayerAdmin(event)" class="flex gap-2">
                             <input type="text" id="admin-new-player-name" placeholder="Nome e Cognome..." class="flex-1 min-w-0 text-xs p-2.5 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500" required>
                             <select id="admin-new-player-group" class="text-xs p-2.5 rounded-xl border border-slate-200 font-bold text-slate-700 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-tennis-500">
@@ -2028,7 +2147,6 @@
                             </button>
                         </form>
 
-                        <!-- Lista Giocatori Modificabili -->
                         <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
                             ${appState.players.map(p => `
                                 <div class="flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-200/80">
@@ -2044,7 +2162,7 @@
                         </div>
                     </div>
 
-                    <!-- Gestione Password Ruoli con pulsante visibilità password (occhio) -->
+                    <!-- Gestione Password Ruoli -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                         <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
                             <i class="fa-solid fa-key text-tennis-600"></i>
@@ -2100,17 +2218,25 @@
                         </form>
                     </div>
 
-                    <!-- Reset Dati & Aggiornamento Cache App -->
+                    <!-- Aggiornamento Versione App & Notifica Reinstallazione -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
                         <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
                             <i class="fa-solid fa-arrows-rotate text-tennis-600"></i>
                             <span>Aggiornamento Versione App</span>
                         </h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">Forza il ricaricamento del codice dell'applicazione pulendo la cache del browser senza perdere i dati del torneo.</p>
-                        <button type="button" onclick="forceAppCodeReload()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-3 rounded-xl shadow transition flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-rotate"></i>
-                            <span>Ricarica Versione Aggiornata</span>
-                        </button>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            Versione struttura attuale: <strong class="text-slate-800">v${appState.appVersion || APP_VERSION}</strong>. Pubblica una nuova versione per avvisare tutti gli utenti di aggiornare e reinstallare il pacchetto.
+                        </p>
+                        <div class="grid grid-cols-1 gap-2">
+                            <button type="button" onclick="publishNewAppVersionAlert()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs py-3 rounded-xl shadow transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-bullhorn"></i>
+                                <span>Notifica Nuovo Aggiornamento a Tutti</span>
+                            </button>
+                            <button type="button" onclick="forceAppCodeReload()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-3 rounded-xl shadow transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-rotate"></i>
+                                <span>Ricarica Versione Aggiornata</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Reset Dati -->
@@ -2123,11 +2249,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        // Manual cloud pull
-        function manualCloudPull() {
-            pullStateFromCloud(false);
         }
 
         // Force reload HTML/JS code bypassing browser cache while preserving tournament state
@@ -2232,6 +2353,7 @@
             initPWA();
             initPullToRefresh();
             renderApp();
+            checkAppVersionUpdate();
             startCloudPolling();
         };
     </script>
