@@ -425,12 +425,12 @@
 
     <script>
         // Versione corrente della struttura dell'applicazione
-        const APP_VERSION = '2.1.0';
+        const APP_VERSION = '2.2.0';
 
-        // Preset SVG Logos (Encoded Data URIs)
+        // Preset SVG Logos (Ottimizzati con safe-zone per icone Home Android/iOS)
         const PRESET_LOGOS = {
-            rackets: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#84cc16"/><stop offset="50%" stop-color="#10b981"/><stop offset="100%" stop-color="#0284c7"/></linearGradient></defs><circle cx="100" cy="100" r="100" fill="url(#bg)"/><g stroke="#ffffff" stroke-width="6" fill="none" stroke-linecap="round"><ellipse cx="75" cy="75" rx="28" ry="38" transform="rotate(-45 75 75)"/><line x1="95" y1="95" x2="145" y2="145" stroke-width="10"/><ellipse cx="125" cy="75" rx="28" ry="38" transform="rotate(45 125 75)"/><line x1="105" y1="95" x2="55" y2="145" stroke-width="10"/></g><circle cx="100" cy="105" r="18" fill="#d9f99d" stroke="#ffffff" stroke-width="3"/></svg>`),
-            trophy: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs><circle cx="100" cy="100" r="100" fill="url(#bg2)"/><path d="M65 55h70v35c0 22-15 38-35 38s-35-16-35-38V55z" fill="#fbbf24"/><path d="M65 68H48c0 20 10 30 22 32M135 68h17c0 20-10 30-22 32" stroke="#fbbf24" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="92" y="125" width="16" height="24" fill="#fbbf24"/><rect x="72" y="148" width="56" height="10" rx="5" fill="#f59e0b"/><circle cx="132" cy="72" r="16" fill="#bef264" stroke="#ffffff" stroke-width="2.5"/></svg>`)
+            rackets: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#84cc16"/><stop offset="50%" stop-color="#10b981"/><stop offset="100%" stop-color="#0284c7"/></linearGradient></defs><rect width="200" height="200" fill="url(#bg)"/><g transform="translate(100,100) scale(0.72) translate(-100,-100)"><g stroke="#ffffff" stroke-width="6.5" fill="none" stroke-linecap="round"><ellipse cx="75" cy="75" rx="28" ry="38" transform="rotate(-45 75 75)"/><line x1="95" y1="95" x2="145" y2="145" stroke-width="10"/><ellipse cx="125" cy="75" rx="28" ry="38" transform="rotate(45 125 75)"/><line x1="105" y1="95" x2="55" y2="145" stroke-width="10"/></g><circle cx="100" cy="105" r="18" fill="#d9f99d" stroke="#ffffff" stroke-width="3.5"/></g></svg>`),
+            trophy: "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient></defs><rect width="200" height="200" fill="url(#bg2)"/><g transform="translate(100,100) scale(0.72) translate(-100,-100)"><path d="M65 55h70v35c0 22-15 38-35 38s-35-16-35-38V55z" fill="#fbbf24"/><path d="M65 68H48c0 20 10 30 22 32M135 68h17c0 20-10 30-22 32" stroke="#fbbf24" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="92" y="125" width="16" height="24" fill="#fbbf24"/><rect x="72" y="148" width="56" height="10" rx="5" fill="#f59e0b"/><circle cx="132" cy="72" r="16" fill="#bef264" stroke="#ffffff" stroke-width="2.5"/></g></svg>`)
         };
 
         // Preset Theme Palettes
@@ -481,6 +481,7 @@
             activeTab: 'gironi',
             tournamentName: 'Open Tennis Cup 2026',
             customLogo: PRESET_LOGOS.rackets,
+            iconScale: 0.72,
             themeKey: 'sky',
             customThemeHex: '#0284c7',
             cloudSyncUrl: 'https://tenniscup26-default-rtdb.europe-west1.firebasedatabase.app/',
@@ -533,6 +534,7 @@
         let isLoginButtonRevealed = false;
         let cloudPollInterval = null;
         let lastCloudHash = '';
+        let generatedAppIconPng = '';
 
         // Switch active tab view
         function switchTab(tabKey) {
@@ -678,6 +680,7 @@
                     appVersion: appState.appVersion || APP_VERSION,
                     tournamentName: appState.tournamentName,
                     customLogo: appState.customLogo,
+                    iconScale: appState.iconScale || 0.72,
                     themeKey: appState.themeKey,
                     customThemeHex: appState.customThemeHex,
                     passwords: appState.passwords,
@@ -717,6 +720,8 @@
                 const metaChanged = remoteData.tournamentName !== appState.tournamentName ||
                                     remoteData.themeKey !== appState.themeKey ||
                                     remoteData.rulesText !== appState.rulesText ||
+                                    remoteData.customLogo !== appState.customLogo ||
+                                    remoteData.iconScale !== appState.iconScale ||
                                     (remoteData.appVersion && remoteData.appVersion !== appState.appVersion);
 
                 if (newHash !== lastCloudHash || metaChanged) {
@@ -844,7 +849,7 @@
                 appState.customThemeHex = THEME_PALETTES[key][600];
                 saveToStorage();
                 applyAppTheme();
-                initPWA();
+                applyAppLogoToAllParts();
                 renderApp();
                 showToast(`Tonalità "${THEME_PALETTES[key].name}" applicata!`, 'success');
             }
@@ -859,33 +864,90 @@
             appState.customThemeHex = hexValue;
             saveToStorage();
             applyAppTheme();
-            initPWA();
+            applyAppLogoToAllParts();
             renderApp();
             showToast('Colore personalizzato applicato a tutta l\'interfaccia!', 'success');
         }
 
+        // Genera un'icona PNG 512x512 con safe-zone adattiva (evita tagli e sgranature sui launcher smartphone)
+        function generatePaddedPngIcon(sourceSrc, scaleFactor = 0.72) {
+            return new Promise((resolve) => {
+                const palette = (appState.themeKey === 'custom' && appState.customThemeHex)
+                    ? buildPaletteFromHex(appState.customThemeHex)
+                    : (THEME_PALETTES[appState.themeKey] || THEME_PALETTES.sky);
+
+                const canvas = document.createElement('canvas');
+                const size = 512;
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+
+                // Sfondo pieno edge-to-edge (necessario per icone adattive Android e iOS)
+                const grad = ctx.createLinearGradient(0, 0, size, size);
+                grad.addColorStop(0, palette[600]);
+                grad.addColorStop(1, palette[900]);
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, size, size);
+
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    const safeSize = size * scaleFactor;
+                    const offset = (size - safeSize) / 2;
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(size / 2, size / 2, safeSize / 2, 0, Math.PI * 2);
+                    ctx.closePath();
+                    ctx.clip();
+                    ctx.drawImage(img, offset, offset, safeSize, safeSize);
+                    ctx.restore();
+
+                    // Leggero bordo bianco di rifinitura attorno al logo
+                    ctx.beginPath();
+                    ctx.arc(size / 2, size / 2, safeSize / 2, 0, Math.PI * 2);
+                    ctx.lineWidth = 8;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+                    ctx.stroke();
+
+                    resolve(canvas.toDataURL('image/png', 0.95));
+                };
+                img.onerror = function() {
+                    resolve(sourceSrc);
+                };
+                img.src = sourceSrc;
+            });
+        }
+
         // Apply active logo across Header, Favicon, Apple Touch Icon & PWA Manifest
-        function applyAppLogoToAllParts() {
+        async function applyAppLogoToAllParts() {
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
+            const scaleFactor = appState.iconScale || 0.72;
 
             const headerLogoEl = document.getElementById('header-app-logo');
             if (headerLogoEl) {
                 headerLogoEl.innerHTML = `<img src="${activeLogo}" alt="Logo Torneo" class="w-full h-full object-cover rounded-full">`;
             }
 
-            const appleTouch = document.getElementById('apple-touch-icon');
-            if (appleTouch) appleTouch.setAttribute('href', activeLogo);
-            const favicon = document.getElementById('favicon-link');
-            if (favicon) favicon.setAttribute('href', activeLogo);
+            const pngIcon = await generatePaddedPngIcon(activeLogo, scaleFactor);
+            generatedAppIconPng = pngIcon;
 
-            initPWA();
+            const appleTouch = document.getElementById('apple-touch-icon');
+            if (appleTouch) appleTouch.setAttribute('href', pngIcon);
+            const favicon = document.getElementById('favicon-link');
+            if (favicon) favicon.setAttribute('href', pngIcon);
+
+            const previewImg = document.getElementById('home-icon-live-preview');
+            if (previewImg) previewImg.src = pngIcon;
+
+            initPWA(pngIcon);
         }
 
-        // Initialize PWA manifest
-        function initPWA() {
+        // Initialize PWA manifest with proper PNG 512x512 & safe-zone
+        function initPWA(iconDataUrl) {
             try {
-                const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
-                const iconType = activeLogo.startsWith('data:image/svg+xml') ? 'image/svg+xml' : 'image/png';
+                const finalIcon = iconDataUrl || generatedAppIconPng || appState.customLogo || PRESET_LOGOS.rackets;
+                const iconType = finalIcon.startsWith('data:image/png') ? 'image/png' : 'image/svg+xml';
                 const palette = (appState.themeKey === 'custom' && appState.customThemeHex)
                     ? buildPaletteFromHex(appState.customThemeHex)
                     : (THEME_PALETTES[appState.themeKey] || THEME_PALETTES.sky);
@@ -894,12 +956,18 @@
                     short_name: "TennisCup",
                     start_url: "./",
                     display: "standalone",
-                    background_color: "#f1f5f9",
+                    background_color: palette[800],
                     theme_color: palette[700],
                     icons: [
                         {
-                            src: activeLogo,
-                            sizes: "192x192 512x512",
+                            src: finalIcon,
+                            sizes: "192x192",
+                            type: iconType,
+                            purpose: "any"
+                        },
+                        {
+                            src: finalIcon,
+                            sizes: "512x512",
                             type: iconType,
                             purpose: "any maskable"
                         }
@@ -915,7 +983,16 @@
             }
         }
 
-        // Handle Logo File Upload
+        function setIconScale(newScale) {
+            if (appState.currentUserRole !== 'amministratore') return;
+            appState.iconScale = parseFloat(newScale) || 0.72;
+            saveToStorage();
+            applyAppLogoToAllParts();
+            renderApp();
+            showToast('Dimensione icona smartphone aggiornata!', 'success');
+        }
+
+        // Handle Logo File Upload with high-res 512x512 square cropping
         function handleCustomLogoUpload(event) {
             if (appState.currentUserRole !== 'amministratore') {
                 showToast('Azione riservata esclusivamente al profilo Amministratore.', 'info');
@@ -929,29 +1006,31 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const size = 256;
+                    const size = 512;
                     canvas.width = size;
                     canvas.height = size;
                     const ctx = canvas.getContext('2d');
-                    ctx.beginPath();
-                    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-                    ctx.closePath();
-                    ctx.clip();
-                    ctx.drawImage(img, 0, 0, size, size);
-                    const resizedDataUrl = canvas.toDataURL('image/png', 0.92);
+
+                    // Ritaglio quadrato centrato (aspect-ratio 1:1 senza deformazioni)
+                    const minSide = Math.min(img.width, img.height);
+                    const sx = (img.width - minSide) / 2;
+                    const sy = (img.height - minSide) / 2;
+
+                    ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+                    const resizedDataUrl = canvas.toDataURL('image/png', 0.95);
 
                     appState.customLogo = resizedDataUrl;
                     saveToStorage();
                     applyAppLogoToAllParts();
                     renderApp();
-                    showToast('Nuovo logo applicato su tutta l\'app!', 'success');
+                    showToast('Nuovo logo ridimensionato e applicato!', 'success');
                 };
                 img.onerror = function() {
                     appState.customLogo = e.target.result;
                     saveToStorage();
                     applyAppLogoToAllParts();
                     renderApp();
-                    showToast('Nuovo logo applicato su tutta l\'app!', 'success');
+                    showToast('Nuovo logo applicato!', 'success');
                 };
                 img.src = e.target.result;
             };
@@ -968,7 +1047,7 @@
                 saveToStorage();
                 applyAppLogoToAllParts();
                 renderApp();
-                showToast('Logo predefinito applicato su tutta l\'app!', 'success');
+                showToast('Logo predefinito applicato!', 'success');
             }
         }
 
@@ -1068,7 +1147,7 @@
             if (appState.currentUserRole !== 'amministratore') return;
             const currentVer = (appState.appVersion || APP_VERSION).split('.');
             const patch = (parseInt(currentVer[2], 10) || 0) + 1;
-            const nextVer = `${currentVer[0] || '2'}.${currentVer[1] || '1'}.${patch}`;
+            const nextVer = `${currentVer[0] || '2'}.${currentVer[1] || '2'}.${patch}`;
 
             appState.appVersion = nextVer;
             localStorage.setItem('tennis_cup_pro_installed_version', nextVer);
@@ -1085,6 +1164,7 @@
                     const parsed = JSON.parse(saved);
                     appState = Object.assign({}, DEFAULT_STATE, parsed);
                     if (!appState.customLogo) appState.customLogo = PRESET_LOGOS.rackets;
+                    if (!appState.iconScale) appState.iconScale = 0.72;
                     normalizePlayoffsState();
                 } catch (e) {
                     console.error("Error reading storage:", e);
@@ -1984,6 +2064,9 @@
         // View 5: Admin Settings Panel
         function renderAdminView() {
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
+            const currentScale = appState.iconScale || 0.72;
+            const previewSrc = generatedAppIconPng || activeLogo;
+
             return `
                 <div class="space-y-5">
                     <div class="flex items-center justify-between">
@@ -2036,17 +2119,40 @@
                         <div class="flex items-center justify-between">
                             <h3 class="font-extrabold text-sm text-slate-800 flex items-center space-x-2">
                                 <i class="fa-solid fa-image text-tennis-600"></i>
-                                <span>Logo & Icona dell'App</span>
+                                <span>Logo & Icona Smartphone</span>
                             </h3>
                             <span class="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-lg">Solo Admin</span>
                         </div>
                         <div class="flex items-center space-x-3.5 bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                            <img src="${activeLogo}" alt="Anteprima Logo" class="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md shrink-0">
+                            <div class="flex flex-col items-center shrink-0">
+                                <img id="home-icon-live-preview" src="${previewSrc}" alt="Anteprima Icona Home" class="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-md">
+                                <span class="text-[9px] font-bold text-slate-400 mt-1">Anteprima Home</span>
+                            </div>
                             <div class="space-y-1.5 flex-1 min-w-0">
-                                <div class="text-xs font-bold text-slate-800">Logo Attivo</div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Si aggiorna subito nell'app. L'icona sulla Home del telefono richiede invece di riaggiungere il collegamento.</p>
+                                <div class="text-xs font-bold text-slate-800">Icona HD 512×512 con Safe-Zone</div>
+                                <p class="text-[11px] text-slate-500 leading-snug">Ridimensionata automaticamente per non risultare tagliata sui bordi. Se hai già l'icona sulla Home, rimuovila e riaggiungila.</p>
                             </div>
                         </div>
+
+                        <!-- Controllo Proporzione / Zoom Icona Home -->
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[11px] font-bold text-slate-700">Dimensione Logo nell'Icona Home:</span>
+                                <span class="text-[10px] font-extrabold text-tennis-700 bg-tennis-100 px-2 py-0.5 rounded-md">${Math.round(currentScale * 100)}%</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-1.5">
+                                <button type="button" onclick="setIconScale(0.62)" class="py-1.5 px-2 rounded-lg text-[10px] font-bold border ${Math.abs(currentScale - 0.62) < 0.03 ? 'bg-tennis-600 text-white border-tennis-600' : 'bg-white text-slate-700 border-slate-200'} transition">
+                                    Compatta (62%)
+                                </button>
+                                <button type="button" onclick="setIconScale(0.72)" class="py-1.5 px-2 rounded-lg text-[10px] font-bold border ${Math.abs(currentScale - 0.72) < 0.03 ? 'bg-tennis-600 text-white border-tennis-600' : 'bg-white text-slate-700 border-slate-200'} transition">
+                                    Ottimale (72%)
+                                </button>
+                                <button type="button" onclick="setIconScale(0.84)" class="py-1.5 px-2 rounded-lg text-[10px] font-bold border ${Math.abs(currentScale - 0.84) < 0.03 ? 'bg-tennis-600 text-white border-tennis-600' : 'bg-white text-slate-700 border-slate-200'} transition">
+                                    Grande (84%)
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-3 gap-2">
                             <button type="button" onclick="setPresetLogo('rackets')" class="p-2 rounded-xl border border-slate-200 hover:border-tennis-500 bg-slate-50 flex flex-col items-center space-y-1 transition">
                                 <img src="${PRESET_LOGOS.rackets}" class="w-8 h-8 rounded-full">
