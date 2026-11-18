@@ -472,21 +472,15 @@
                 { id: 'm12', group: 'B', player1: 'Davide Blu', player2: 'Simone Viola', date: '2026-11-23', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false }
             ],
             playoffs: {
-                quarterfinals: [
-                    { id: 'qf1', label: 'Quarto 1', player1: 'Marco Rossi', player2: 'Federico Rosa', date: '2026-11-25', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
-                    { id: 'qf2', label: 'Quarto 2', player1: 'Davide Blu', player2: 'Giovanni Verdi', date: '2026-11-25', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
-                    { id: 'qf3', label: 'Quarto 3', player1: 'Simone Viola', player2: 'Luca Bianchi', date: '2026-11-26', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
-                    { id: 'qf4', label: 'Quarto 4', player1: 'Alessandro Neri', player2: 'Matteo Gialli', date: '2026-11-26', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
-                ],
                 semifinals: [
-                    { id: 'sf1', label: 'Semifinale 1', player1: 'Vincente Q1', player2: 'Vincente Q2', date: '2026-11-28', time: '17:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
-                    { id: 'sf2', label: 'Semifinale 2', player1: 'Vincente Q3', player2: 'Vincente Q4', date: '2026-11-28', time: '19:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
+                    { id: 'sf1', label: 'Semifinale 1', player1: '1° Girone A', player2: '2° Girone B', date: '2026-11-28', time: '17:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
+                    { id: 'sf2', label: 'Semifinale 2', player1: '1° Girone B', player2: '2° Girone A', date: '2026-11-28', time: '19:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
                 ],
                 final: [
-                    { id: 'f1', label: 'Finalissima', player1: 'Vincente SF1', player2: 'Vincente SF2', date: '2026-11-30', time: '18:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
+                    { id: 'f1', label: 'Finalissima (1° - 2° Posto)', player1: 'Vincente Semifinale 1', player2: 'Vincente Semifinale 2', date: '2026-11-30', time: '18:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
                 ]
             },
-            rulesText: `REGOLAMENTO UFFICIALE DEL TORNEO\n\n1. FORMULA DI GIOCO\nTutti gli incontri si disputano al meglio dei 3 set. Sul punteggio di 6 pari si gioca il tie-break a 7 punti. L'eventuale terzo set viene sostituito da un super tie-break a 10 punti.\n\n2. PUNTEGGI E CLASSIFICA GIRONI\n- Vittoria: 3 punti\n- Sconfitta: 0 punti\nIn caso di parità in classifica si considerano nell'ordine:\na) Scontro diretto\nb) Differenza set vinti/persi\nc) Differenza game vinti/persi\n\n3. FASE FINALE\nAccedono ai Quarti di Finale i migliori classificati di ciascun girone secondo il tabellone incrociato.\n\n4. ORARI E FAIR PLAY\nÈ richiesta la massima puntualità (tolleranza 15 minuti). I risultati vengono inseriti dagli Editori o dall'Amministratore al termine di ogni match.`,
+            rulesText: `REGOLAMENTO UFFICIALE DEL TORNEO\n\n1. FORMULA DI GIOCO\nTutti gli incontri si disputano al meglio dei 3 set.\n\n2. FASE FINALE\nI primi 2 classificati di ciascun girone accedono direttamente alle Semifinali (Semifinale 1: 1° Girone A vs 2° Girone B; Semifinale 2: 1° Girone B vs 2° Girone A).`,
             authorText: 'Realizzato da Antonio Esposito',
             copyrightText: '© 2026 Open Tennis Cup. Tutti i diritti riservati.'
         };
@@ -633,37 +627,36 @@
         }
 
         // Push current tournament state to Cloud (Only when Editore or Amministratore saves changes)
-        async function pushStateToCloud() {
-            const endpoint = getNormalizedCloudEndpoint(appState.cloudSyncUrl);
-            if (!endpoint) return;
-            if (appState.currentUserRole === 'visualizzatore') return;
+        // Normalize playoffs structure to ensure no quarterfinals exist and exact semifinal/final labels are used
+        function normalizePlayoffsState() {
+            if (!appState.playoffs) {
+                appState.playoffs = JSON.parse(JSON.stringify(DEFAULT_STATE.playoffs));
+                return;
+            }
+            if (appState.playoffs.quarterfinals) {
+                delete appState.playoffs.quarterfinals;
+            }
+            if (!Array.isArray(appState.playoffs.semifinals) || appState.playoffs.semifinals.length < 2) {
+                appState.playoffs.semifinals = JSON.parse(JSON.stringify(DEFAULT_STATE.playoffs.semifinals));
+            } else {
+                const sf1 = appState.playoffs.semifinals[0];
+                const sf2 = appState.playoffs.semifinals[1];
+                sf1.label = 'Semifinale 1';
+                if (!sf1.player1 || sf1.player1.startsWith('Vincente Q')) sf1.player1 = '1° Girone A';
+                if (!sf1.player2 || sf1.player2.startsWith('Vincente Q')) sf1.player2 = '2° Girone B';
 
-            try {
-                const payloadToSync = {
-                    tournamentName: appState.tournamentName,
-                    customLogo: appState.customLogo,
-                    themeKey: appState.themeKey,
-                    customThemeHex: appState.customThemeHex,
-                    passwords: appState.passwords,
-                    players: appState.players,
-                    matches: appState.matches,
-                    playoffs: appState.playoffs,
-                    rulesText: appState.rulesText,
-                    authorText: appState.authorText,
-                    copyrightText: appState.copyrightText,
-                    updatedAt: Date.now()
-                };
-                const res = await fetch(endpoint, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payloadToSync)
-                });
-                if (res.ok) {
-                    lastCloudHash = JSON.stringify(payloadToSync.matches) + JSON.stringify(payloadToSync.players) + JSON.stringify(payloadToSync.playoffs);
-                }
-            } catch (e) {
-                // Safely handle offline network connection drops without crashing
-                console.warn("Cloud push warning: Offline or connection blocked.", e);
+                sf2.label = 'Semifinale 2';
+                if (!sf2.player1 || sf2.player1.startsWith('Vincente Q')) sf2.player1 = '1° Girone B';
+                if (!sf2.player2 || sf2.player2.startsWith('Vincente Q')) sf2.player2 = '2° Girone A';
+            }
+
+            if (!Array.isArray(appState.playoffs.final) || appState.playoffs.final.length < 1) {
+                appState.playoffs.final = JSON.parse(JSON.stringify(DEFAULT_STATE.playoffs.final));
+            } else {
+                const fin = appState.playoffs.final[0];
+                fin.label = 'Finalissima (1° - 2° Posto)';
+                if (!fin.player1 || fin.player1 === 'Vincente SF1') fin.player1 = 'Vincente Semifinale 1';
+                if (!fin.player2 || fin.player2 === 'Vincente SF2') fin.player2 = 'Vincente Semifinale 2';
             }
         }
 
@@ -696,6 +689,7 @@
                         viewerSelectedPlayer: preservedFilter,
                         cloudSyncUrl: preservedUrl
                     });
+                    normalizePlayoffsState();
 
                     localStorage.setItem('tennis_cup_pro_state_v2', JSON.stringify(appState));
                     renderApp();
@@ -974,6 +968,7 @@
                     console.error("Error reading storage:", e);
                 }
             }
+            normalizePlayoffsState();
         }
 
         function saveToStorage() {
@@ -1115,8 +1110,6 @@
             let match = null;
             if (stageType === 'group') {
                 match = appState.matches.find(m => m.id === matchId);
-            } else if (stageType === 'quarterfinal') {
-                match = appState.playoffs.quarterfinals.find(q => q.id === matchId);
             } else if (stageType === 'semifinal') {
                 match = appState.playoffs.semifinals.find(s => s.id === matchId);
             } else if (stageType === 'final') {
@@ -1185,22 +1178,6 @@
                     m.p2Sets = p2Sets;
                     m.played = played;
                 }
-            } else if (stageType === 'quarterfinal') {
-                const q = appState.playoffs.quarterfinals.find(item => item.id === matchId);
-                if (q) {
-                    q.date = date;
-                    q.time = time;
-                    q.scoreText = scoreText;
-                    q.p1Sets = p1Sets;
-                    q.p2Sets = p2Sets;
-                    q.played = played;
-                    if (played) {
-                        q.winner = p1Sets > p2Sets ? q.player1 : q.player2;
-                    } else {
-                        q.winner = '';
-                    }
-                    updatePlayoffProgression();
-                }
             } else if (stageType === 'semifinal') {
                 const s = appState.playoffs.semifinals.find(item => item.id === matchId);
                 if (s) {
@@ -1241,20 +1218,14 @@
         }
 
         function updatePlayoffProgression() {
-            const q = appState.playoffs.quarterfinals;
             const s = appState.playoffs.semifinals;
             const f = appState.playoffs.final;
 
-            if (s[0]) s[0].player1 = q[0].winner || 'Vincente Q1';
-            if (s[0]) s[0].player2 = q[1].winner || 'Vincente Q2';
-            if (s[1]) s[1].player1 = q[2].winner || 'Vincente Q3';
-            if (s[1]) s[1].player2 = q[3].winner || 'Vincente Q4';
-
-            if (f[0]) f[0].player1 = s[0].winner || 'Vincente SF1';
-            if (f[0]) f[0].player2 = s[1].winner || 'Vincente SF2';
+            if (f[0]) f[0].player1 = s[0].winner || 'Vincente Semifinale 1';
+            if (f[0]) f[0].player2 = s[1].winner || 'Vincente Semifinale 2';
         }
 
-        function generateQuarterfinalsFromStandings() {
+        function generateSemifinalsFromStandings() {
             if (appState.currentUserRole !== 'amministratore') {
                 showToast('Funzione riservata all\'Amministratore.', 'info');
                 return;
@@ -1262,7 +1233,7 @@
 
             const groups = [...new Set(appState.players.map(p => p.group))].sort();
             if (groups.length < 2) {
-                showToast('Servono almeno 2 gironi per generare i quarti.', 'info');
+                showToast('Servono almeno 2 gironi per generare la fase finale.', 'info');
                 return;
             }
 
@@ -1274,23 +1245,18 @@
             const p1B = standingsB[0] ? standingsB[0].name : '1° Girone B';
             const p2B = standingsB[1] ? standingsB[1].name : '2° Girone B';
 
-            appState.playoffs.quarterfinals[0].player1 = p1A;
-            appState.playoffs.quarterfinals[0].player2 = p2B;
+            // Semifinale 1: 1° Girone A vs 2° Girone B
+            appState.playoffs.semifinals[0].player1 = p1A;
+            appState.playoffs.semifinals[0].player2 = p2B;
 
-            appState.playoffs.quarterfinals[1].player1 = p1B;
-            appState.playoffs.quarterfinals[1].player2 = p2A;
-
-            if (standingsA[2] && standingsB[2]) {
-                appState.playoffs.quarterfinals[2].player1 = standingsA[2].name;
-                appState.playoffs.quarterfinals[2].player2 = standingsB[3] ? standingsB[3].name : '4° B';
-                appState.playoffs.quarterfinals[3].player1 = standingsB[2].name;
-                appState.playoffs.quarterfinals[3].player2 = standingsA[3] ? standingsA[3].name : '4° A';
-            }
+            // Semifinale 2: 1° Girone B vs 2° Girone A
+            appState.playoffs.semifinals[1].player1 = p1B;
+            appState.playoffs.semifinals[1].player2 = p2A;
 
             updatePlayoffProgression();
             saveToStorage();
             renderApp();
-            showToast('Quarti di finale generati con successo dalle classifiche!', 'success');
+            showToast('Semifinali popolate con successo dalle classifiche dei gironi!', 'success');
         }
 
         // Admin Tournament Generator
@@ -1349,18 +1315,12 @@
             });
 
             appState.playoffs = {
-                quarterfinals: [
-                    { id: 'qf1', label: 'Quarto 1', player1: '1° Girone A', player2: '4° Girone B', date: '2026-11-25', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
-                    { id: 'qf2', label: 'Quarto 2', player1: '1° Girone B', player2: '4° Girone A', date: '2026-11-25', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
-                    { id: 'qf3', label: 'Quarto 3', player1: '3° Girone A', player2: '2° Girone B', date: '2026-11-26', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
-                    { id: 'qf4', label: 'Quarto 4', player1: '3° Girone B', player2: '2° Girone A', date: '2026-11-26', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
-                ],
                 semifinals: [
-                    { id: 'sf1', label: 'Semifinale 1', player1: 'Vincente Q1', player2: 'Vincente Q4', date: '2026-11-28', time: '17:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
-                    { id: 'sf2', label: 'Semifinale 2', player1: 'Vincente Q2', player2: 'Vincente Q3', date: '2026-11-28', time: '19:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
+                    { id: 'sf1', label: 'Semifinale 1', player1: '1° Girone A', player2: '2° Girone B', date: '2026-11-28', time: '17:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' },
+                    { id: 'sf2', label: 'Semifinale 2', player1: '1° Girone B', player2: '2° Girone A', date: '2026-11-28', time: '19:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
                 ],
                 final: [
-                    { id: 'f1', label: 'Finalissima', player1: 'Vincente SF1', player2: 'Vincente SF2', date: '2026-11-30', time: '18:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
+                    { id: 'f1', label: 'Finalissima (1° - 2° Posto)', player1: 'Vincente Semifinale 1', player2: 'Vincente Semifinale 2', date: '2026-11-30', time: '18:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
                 ]
             };
 
@@ -1395,7 +1355,7 @@
                 if (m.player2 === oldName) m.player2 = newName;
             });
 
-            ['quarterfinals', 'semifinals', 'final'].forEach(stage => {
+            ['semifinals', 'final'].forEach(stage => {
                 appState.playoffs[stage].forEach(match => {
                     if (match.player1 === oldName) match.player1 = newName;
                     if (match.player2 === oldName) match.player2 = newName;
@@ -1837,7 +1797,7 @@
                             <span>Tabellone Fase Finale</span>
                         </h2>
                         ${isAdmin ? `
-                            <button onclick="generateQuarterfinalsFromStandings()" class="bg-tennis-600 hover:bg-tennis-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow transition flex items-center space-x-1">
+                            <button onclick="generateSemifinalsFromStandings()" class="bg-tennis-600 hover:bg-tennis-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow transition flex items-center space-x-1">
                                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                                 <span>Popola da Gironi</span>
                             </button>
@@ -1854,11 +1814,11 @@
                         </div>
                     ` : ''}
 
-                    <!-- Finalissima -->
+                    <!-- Finalissima (1° - 2° Posto) -->
                     <div class="space-y-2">
                         <div class="text-[11px] font-extrabold uppercase text-amber-600 tracking-wider flex items-center space-x-1.5">
                             <i class="fa-solid fa-star"></i>
-                            <span>Finalissima</span>
+                            <span>Finalissima (1° - 2° Posto)</span>
                         </div>
                         ${appState.playoffs.final.map(f => renderKnockoutCard(f, 'final')).join('')}
                     </div>
@@ -1868,14 +1828,6 @@
                         <div class="text-[11px] font-extrabold uppercase text-tennis-700 tracking-wider">Semifinali</div>
                         <div class="grid grid-cols-1 gap-2.5">
                             ${appState.playoffs.semifinals.map(s => renderKnockoutCard(s, 'semifinal')).join('')}
-                        </div>
-                    </div>
-
-                    <!-- Quarti di Finale -->
-                    <div class="space-y-2">
-                        <div class="text-[11px] font-extrabold uppercase text-slate-500 tracking-wider">Quarti di Finale</div>
-                        <div class="grid grid-cols-1 gap-2.5">
-                            ${appState.playoffs.quarterfinals.map(q => renderKnockoutCard(q, 'quarterfinal')).join('')}
                         </div>
                     </div>
                 </div>
