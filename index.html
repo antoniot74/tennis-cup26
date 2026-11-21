@@ -352,18 +352,18 @@
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Punteggio Completo (es. 6-4 3-6 10-7)</label>
-                        <input type="text" id="match-score-string" placeholder="6-4 6-3" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                        <label id="match-score-label" class="block text-[11px] font-bold text-slate-700 mb-1">Punteggio Completo (es. 4-2 2-4 10-7)</label>
+                        <input type="text" id="match-score-string" oninput="autoComputeSetsFromScore()" placeholder="4-2 4-1" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label id="label-p1-sets" class="block text-[11px] font-bold text-slate-700 mb-1 truncate">Set Giocatore 1</label>
-                            <input type="number" id="match-p1-sets" min="0" max="3" value="0" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                            <input type="number" id="match-p1-sets" min="0" max="3" value="0" onchange="autoCheckPlayedOnSetsChange()" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
                         </div>
                         <div>
                             <label id="label-p2-sets" class="block text-[11px] font-bold text-slate-700 mb-1 truncate">Set Giocatore 2</label>
-                            <input type="number" id="match-p2-sets" min="0" max="3" value="0" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                            <input type="number" id="match-p2-sets" min="0" max="3" value="0" onchange="autoCheckPlayedOnSetsChange()" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-tennis-500">
                         </div>
                     </div>
 
@@ -425,7 +425,7 @@
 
     <script>
         // Versione corrente della struttura dell'applicazione
-        const APP_VERSION = '2.2.0';
+        const APP_VERSION = '2.4.0';
 
         // Preset SVG Logos (Ottimizzati con safe-zone per icone Home Android/iOS)
         const PRESET_LOGOS = {
@@ -473,13 +473,20 @@
             }
         };
 
-        // Default Application State with Passwords, Custom Logo & Demo Tournament
+        // Helper per generare testo regolamento dinamico in base ai game per set
+        function buildDefaultRulesText(gamesPerSet = 4) {
+            const tbScore = Math.max(1, gamesPerSet - 1);
+            return `REGOLAMENTO UFFICIALE DEL TORNEO\n\n1. FORMULA DI GIOCO\nTutti gli incontri si disputano al meglio dei 3 set ai ${gamesPerSet} game (chi vince ${gamesPerSet} game si aggiudica il set). Sul punteggio di ${tbScore} pari si gioca il tie-break a 7 punti. L'eventuale terzo set viene sostituito da un super tie-break a 10 punti.\n\n2. PUNTEGGI E CLASSIFICA GIRONI\n- Vittoria: 3 punti\n- Sconfitta: 0 punti\nIn caso di parità in classifica si considerano nell'ordine:\na) Scontro diretto\nb) Differenza set vinti/persi\nc) Differenza game vinti/persi\n\n3. FASE FINALE\nAccedono direttamente alle Semifinali i primi 2 classificati di ciascun girone (1° Girone A vs 2° Girone B e 1° Girone B vs 2° Girone A). I vincitori disputano la Finalissima per il 1° e 2° posto.\n\n4. ORARI E FAIR PLAY\nÈ richiesta la massima puntualità (tolleranza 15 minuti). I risultati vengono inseriti dagli Editori o dall'Amministratore al termine di ogni match.`;
+        }
+
+        // Default Application State with 4 Games per Set (Tie-Break at 3-3)
         const DEFAULT_STATE = {
             appVersion: APP_VERSION,
             currentUserRole: 'visualizzatore',
             viewerSelectedPlayer: '',
             activeTab: 'gironi',
             tournamentName: 'Open Tennis Cup 2026',
+            gamesPerSet: 4,
             customLogo: PRESET_LOGOS.rackets,
             iconScale: 0.72,
             themeKey: 'sky',
@@ -500,16 +507,16 @@
                 { id: 8, name: 'Federico Rosa', group: 'B' }
             ],
             matches: [
-                { id: 'm1', group: 'A', player1: 'Marco Rossi', player2: 'Luca Bianchi', date: '2026-11-18', time: '18:00', scoreText: '6-4 6-3', p1Sets: 2, p2Sets: 0, played: true },
-                { id: 'm2', group: 'A', player1: 'Giovanni Verdi', player2: 'Alessandro Neri', date: '2026-11-18', time: '19:30', scoreText: '4-6 6-3 10-8', p1Sets: 1, p2Sets: 2, played: true },
-                { id: 'm3', group: 'A', player1: 'Marco Rossi', player2: 'Giovanni Verdi', date: '2026-11-20', time: '18:00', scoreText: '6-2 6-4', p1Sets: 2, p2Sets: 0, played: true },
-                { id: 'm4', group: 'A', player1: 'Luca Bianchi', player2: 'Alessandro Neri', date: '2026-11-20', time: '19:30', scoreText: '3-6 5-7', p1Sets: 0, p2Sets: 2, played: true },
+                { id: 'm1', group: 'A', player1: 'Marco Rossi', player2: 'Luca Bianchi', date: '2026-11-18', time: '18:00', scoreText: '4-2 4-1', p1Sets: 2, p2Sets: 0, played: true },
+                { id: 'm2', group: 'A', player1: 'Giovanni Verdi', player2: 'Alessandro Neri', date: '2026-11-18', time: '19:30', scoreText: '2-4 4-3 10-8', p1Sets: 1, p2Sets: 2, played: true },
+                { id: 'm3', group: 'A', player1: 'Marco Rossi', player2: 'Giovanni Verdi', date: '2026-11-20', time: '18:00', scoreText: '4-1 4-2', p1Sets: 2, p2Sets: 0, played: true },
+                { id: 'm4', group: 'A', player1: 'Luca Bianchi', player2: 'Alessandro Neri', date: '2026-11-20', time: '19:30', scoreText: '1-4 3-4', p1Sets: 0, p2Sets: 2, played: true },
                 { id: 'm5', group: 'A', player1: 'Marco Rossi', player2: 'Alessandro Neri', date: '2026-11-22', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false },
                 { id: 'm6', group: 'A', player1: 'Luca Bianchi', player2: 'Giovanni Verdi', date: '2026-11-22', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false },
-                { id: 'm7', group: 'B', player1: 'Matteo Gialli', player2: 'Davide Blu', date: '2026-11-19', time: '18:00', scoreText: '6-4 3-6 10-7', p1Sets: 2, p2Sets: 1, played: true },
-                { id: 'm8', group: 'B', player1: 'Simone Viola', player2: 'Federico Rosa', date: '2026-11-19', time: '19:30', scoreText: '6-1 6-2', p1Sets: 2, p2Sets: 0, played: true },
-                { id: 'm9', group: 'B', player1: 'Matteo Gialli', player2: 'Simone Viola', date: '2026-11-21', time: '18:00', scoreText: '4-6 4-6', p1Sets: 0, p2Sets: 2, played: true },
-                { id: 'm10', group: 'B', player1: 'Davide Blu', player2: 'Federico Rosa', date: '2026-11-21', time: '19:30', scoreText: '6-3 6-4', p1Sets: 2, p2Sets: 0, played: true },
+                { id: 'm7', group: 'B', player1: 'Matteo Gialli', player2: 'Davide Blu', date: '2026-11-19', time: '18:00', scoreText: '4-2 2-4 10-7', p1Sets: 2, p2Sets: 1, played: true },
+                { id: 'm8', group: 'B', player1: 'Simone Viola', player2: 'Federico Rosa', date: '2026-11-19', time: '19:30', scoreText: '4-0 4-1', p1Sets: 2, p2Sets: 0, played: true },
+                { id: 'm9', group: 'B', player1: 'Matteo Gialli', player2: 'Simone Viola', date: '2026-11-21', time: '18:00', scoreText: '2-4 3-4', p1Sets: 0, p2Sets: 2, played: true },
+                { id: 'm10', group: 'B', player1: 'Davide Blu', player2: 'Federico Rosa', date: '2026-11-21', time: '19:30', scoreText: '4-1 4-2', p1Sets: 2, p2Sets: 0, played: true },
                 { id: 'm11', group: 'B', player1: 'Matteo Gialli', player2: 'Federico Rosa', date: '2026-11-23', time: '17:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false },
                 { id: 'm12', group: 'B', player1: 'Davide Blu', player2: 'Simone Viola', date: '2026-11-23', time: '18:30', scoreText: '', p1Sets: 0, p2Sets: 0, played: false }
             ],
@@ -522,7 +529,7 @@
                     { id: 'f1', label: 'Finalissima (1° - 2° Posto)', player1: 'Vincente Semifinale 1', player2: 'Vincente Semifinale 2', date: '2026-11-30', time: '18:00', scoreText: '', p1Sets: 0, p2Sets: 0, played: false, winner: '' }
                 ]
             },
-            rulesText: `REGOLAMENTO UFFICIALE DEL TORNEO\n\n1. FORMULA DI GIOCO\nTutti gli incontri si disputano al meglio dei 3 set. Sul punteggio di 6 pari si gioca il tie-break a 7 punti. L'eventuale terzo set viene sostituito da un super tie-break a 10 punti.\n\n2. PUNTEGGI E CLASSIFICA GIRONI\n- Vittoria: 3 punti\n- Sconfitta: 0 punti\nIn caso di parità in classifica si considerano nell'ordine:\na) Scontro diretto\nb) Differenza set vinti/persi\nc) Differenza game vinti/persi\n\n3. FASE FINALE\nAccedono direttamente alle Semifinali i primi 2 classificati di ciascun girone (1° Girone A vs 2° Girone B e 1° Girone B vs 2° Girone A). I vincitori disputano la Finalissima per il 1° e 2° posto.\n\n4. ORARI E FAIR PLAY\nÈ richiesta la massima puntualità (tolleranza 15 minuti). I risultati vengono inseriti dagli Editori o dall'Amministratore al termine di ogni match.`,
+            rulesText: buildDefaultRulesText(4),
             authorText: 'Realizzato da Antonio Esposito',
             copyrightText: '© 2026 Open Tennis Cup. Tutti i diritti riservati.'
         };
@@ -535,6 +542,56 @@
         let cloudPollInterval = null;
         let lastCloudHash = '';
         let generatedAppIconPng = '';
+        let isPushingToCloud = false;
+
+        // Parse sets automatically from a score string like "4-2 4-1" or "4-2 2-4 10-7"
+        function parseSetsFromScoreString(scoreStr) {
+            if (!scoreStr || typeof scoreStr !== 'string') return null;
+            const tokens = scoreStr.trim().split(/[\s,;\/]+/);
+            let p1Sets = 0;
+            let p2Sets = 0;
+            let validSetsFound = 0;
+
+            for (const token of tokens) {
+                const match = token.match(/^(\d+)[-:](\d+)(?:\(\d+\))?$/);
+                if (match) {
+                    const g1 = parseInt(match[1], 10);
+                    const g2 = parseInt(match[2], 10);
+                    if (g1 > g2) {
+                        p1Sets++;
+                        validSetsFound++;
+                    } else if (g2 > g1) {
+                        p2Sets++;
+                        validSetsFound++;
+                    }
+                }
+            }
+
+            if (validSetsFound === 0) return null;
+            return { p1Sets, p2Sets };
+        }
+
+        // Auto-compute sets & check "Partita conclusa" while typing score
+        function autoComputeSetsFromScore() {
+            const scoreVal = document.getElementById('match-score-string').value;
+            const parsed = parseSetsFromScoreString(scoreVal);
+            if (parsed) {
+                document.getElementById('match-p1-sets').value = parsed.p1Sets;
+                document.getElementById('match-p2-sets').value = parsed.p2Sets;
+                if (parsed.p1Sets !== parsed.p2Sets) {
+                    document.getElementById('match-played').checked = true;
+                }
+            }
+        }
+
+        // Auto-check "Partita conclusa" when set inputs change manually
+        function autoCheckPlayedOnSetsChange() {
+            const s1 = parseInt(document.getElementById('match-p1-sets').value, 10) || 0;
+            const s2 = parseInt(document.getElementById('match-p2-sets').value, 10) || 0;
+            if (s1 > 0 || s2 > 0) {
+                document.getElementById('match-played').checked = true;
+            }
+        }
 
         // Switch active tab view
         function switchTab(tabKey) {
@@ -576,37 +633,79 @@
             const stats = {};
 
             groupPlayers.forEach(p => {
-                stats[p.name] = {
+                stats[p.name.trim().toLowerCase()] = {
                     name: p.name,
                     played: 0,
                     won: 0,
                     lost: 0,
                     setsWon: 0,
                     setsLost: 0,
+                    gamesWon: 0,
+                    gamesLost: 0,
                     points: 0
                 };
             });
 
-            const groupMatches = appState.matches.filter(m => m.group === groupLetter && m.played);
+            const groupMatches = appState.matches.filter(m => m.group === groupLetter);
 
             groupMatches.forEach(m => {
-                const p1 = stats[m.player1];
-                const p2 = stats[m.player2];
+                let s1 = parseInt(m.p1Sets, 10) || 0;
+                let s2 = parseInt(m.p2Sets, 10) || 0;
+
+                // Se s1 e s2 sono 0 ma è presente un punteggio testuale valido, ricava automaticamente i set
+                if (s1 === 0 && s2 === 0 && m.scoreText) {
+                    const parsed = parseSetsFromScoreString(m.scoreText);
+                    if (parsed) {
+                        s1 = parsed.p1Sets;
+                        s2 = parsed.p2Sets;
+                    }
+                }
+
+                // Considera la partita valida per la classifica se è marcata conclusa OPPURE se ha un vincitore chiaro (s1 !== s2)
+                const isMatchCompleted = Boolean(m.played) || (s1 !== s2 && (s1 > 0 || s2 > 0));
+                if (!isMatchCompleted) return;
+
+                const key1 = (m.player1 || '').trim().toLowerCase();
+                const key2 = (m.player2 || '').trim().toLowerCase();
+                const p1 = stats[key1];
+                const p2 = stats[key2];
                 if (!p1 || !p2) return;
 
                 p1.played++;
                 p2.played++;
 
-                p1.setsWon += (m.p1Sets || 0);
-                p1.setsLost += (m.p2Sets || 0);
-                p2.setsWon += (m.p2Sets || 0);
-                p2.setsLost += (m.p1Sets || 0);
+                p1.setsWon += s1;
+                p1.setsLost += s2;
+                p2.setsWon += s2;
+                p2.setsLost += s1;
 
-                if (m.p1Sets > m.p2Sets) {
+                // Calcolo differenza game dal punteggio testuale (es. "4-2 4-1")
+                if (m.scoreText) {
+                    const setTokens = m.scoreText.trim().split(/[\s,;\/]+/);
+                    setTokens.forEach((tok, idx) => {
+                        const gm = tok.match(/^(\d+)[-:](\d+)/);
+                        if (gm) {
+                            const g1 = parseInt(gm[1], 10);
+                            const g2 = parseInt(gm[2], 10);
+                            // Nel 3° set super tie-break (es. 10-7) conta come 1 game al vincitore
+                            if (idx === 2 && (g1 >= 10 || g2 >= 10)) {
+                                if (g1 > g2) { p1.gamesWon += 1; p2.gamesLost += 1; }
+                                else if (g2 > g1) { p2.gamesWon += 1; p1.gamesLost += 1; }
+                            } else {
+                                p1.gamesWon += g1;
+                                p1.gamesLost += g2;
+                                p2.gamesWon += g2;
+                                p2.gamesLost += g1;
+                            }
+                        }
+                    });
+                }
+
+                if (s1 > s2) {
                     p1.won++;
                     p2.lost++;
                     p1.points += 3;
-                } else if (m.p2Sets > m.p1Sets) {
+                } else if (s2 > s1) {
                     p2.won++;
                     p1.lost++;
                     p2.points += 3;
@@ -615,9 +714,12 @@
 
             return Object.values(stats).sort((a, b) => {
                 if (b.points !== a.points) return b.points - a.points;
-                const diffA = a.setsWon - a.setsLost;
-                const diffB = b.setsWon - b.setsLost;
-                if (diffB !== diffA) return diffB - diffA;
+                const setDiffA = a.setsWon - a.setsLost;
+                const setDiffB = b.setsWon - b.setsLost;
+                if (setDiffB !== setDiffA) return setDiffB - setDiffA;
+                const gameDiffA = a.gamesWon - a.gamesLost;
+                const gameDiffB = b.gamesWon - b.gamesLost;
+                if (gameDiffB !== gameDiffA) return gameDiffB - gameDiffA;
                 return b.won - a.won;
             });
         }
@@ -675,10 +777,12 @@
             if (!endpoint) return;
             if (appState.currentUserRole === 'visualizzatore') return;
 
+            isPushingToCloud = true;
             try {
                 const payloadToSync = {
                     appVersion: appState.appVersion || APP_VERSION,
                     tournamentName: appState.tournamentName,
+                    gamesPerSet: appState.gamesPerSet || 4,
                     customLogo: appState.customLogo,
                     iconScale: appState.iconScale || 0.72,
                     themeKey: appState.themeKey,
@@ -702,11 +806,14 @@
                 }
             } catch (e) {
                 console.warn("Cloud push warning: Offline or connection blocked.", e);
+            } finally {
+                isPushingToCloud = false;
             }
         }
 
         // Pull latest tournament state from Cloud (For all smartphones)
         async function pullStateFromCloud(silent = true) {
+            if (isPushingToCloud) return;
             const endpoint = getNormalizedCloudEndpoint(appState.cloudSyncUrl);
             if (!endpoint) return;
 
@@ -718,6 +825,7 @@
 
                 const newHash = JSON.stringify(remoteData.matches) + JSON.stringify(remoteData.players) + JSON.stringify(remoteData.playoffs);
                 const metaChanged = remoteData.tournamentName !== appState.tournamentName ||
+                                    remoteData.gamesPerSet !== appState.gamesPerSet ||
                                     remoteData.themeKey !== appState.themeKey ||
                                     remoteData.rulesText !== appState.rulesText ||
                                     remoteData.customLogo !== appState.customLogo ||
@@ -737,6 +845,7 @@
                         viewerSelectedPlayer: preservedFilter,
                         cloudSyncUrl: preservedUrl
                     });
+                    if (!appState.gamesPerSet) appState.gamesPerSet = 4;
                     normalizePlayoffsState();
 
                     localStorage.setItem('tennis_cup_pro_state_v2', JSON.stringify(appState));
@@ -882,7 +991,6 @@
                 canvas.height = size;
                 const ctx = canvas.getContext('2d');
 
-                // Sfondo pieno edge-to-edge (necessario per icone adattive Android e iOS)
                 const grad = ctx.createLinearGradient(0, 0, size, size);
                 grad.addColorStop(0, palette[600]);
                 grad.addColorStop(1, palette[900]);
@@ -903,7 +1011,6 @@
                     ctx.drawImage(img, offset, offset, safeSize, safeSize);
                     ctx.restore();
 
-                    // Leggero bordo bianco di rifinitura attorno al logo
                     ctx.beginPath();
                     ctx.arc(size / 2, size / 2, safeSize / 2, 0, Math.PI * 2);
                     ctx.lineWidth = 8;
@@ -1011,7 +1118,6 @@
                     canvas.height = size;
                     const ctx = canvas.getContext('2d');
 
-                    // Ritaglio quadrato centrato (aspect-ratio 1:1 senza deformazioni)
                     const minSide = Math.min(img.width, img.height);
                     const sx = (img.width - minSide) / 2;
                     const sy = (img.height - minSide) / 2;
@@ -1147,7 +1253,7 @@
             if (appState.currentUserRole !== 'amministratore') return;
             const currentVer = (appState.appVersion || APP_VERSION).split('.');
             const patch = (parseInt(currentVer[2], 10) || 0) + 1;
-            const nextVer = `${currentVer[0] || '2'}.${currentVer[1] || '2'}.${patch}`;
+            const nextVer = `${currentVer[0] || '2'}.${currentVer[1] || '4'}.${patch}`;
 
             appState.appVersion = nextVer;
             localStorage.setItem('tennis_cup_pro_installed_version', nextVer);
@@ -1165,6 +1271,7 @@
                     appState = Object.assign({}, DEFAULT_STATE, parsed);
                     if (!appState.customLogo) appState.customLogo = PRESET_LOGOS.rackets;
                     if (!appState.iconScale) appState.iconScale = 0.72;
+                    if (!appState.gamesPerSet) appState.gamesPerSet = 4;
                     normalizePlayoffsState();
                 } catch (e) {
                     console.error("Error reading storage:", e);
@@ -1319,6 +1426,16 @@
 
             if (!match) return;
 
+            const gps = parseInt(appState.gamesPerSet, 10) || 4;
+            const tbAt = Math.max(1, gps - 1);
+            const sampleScore = gps === 4 ? '4-2 2-4 10-7' : (gps === 6 ? '6-4 3-6 10-7' : `${gps}-2 2-${gps} 10-7`);
+            const samplePlaceholder = gps === 4 ? '4-2 4-1' : (gps === 6 ? '6-4 6-3' : `${gps}-2 ${gps}-1`);
+
+            const scoreLabel = document.getElementById('match-score-label');
+            const scoreInput = document.getElementById('match-score-string');
+            if (scoreLabel) scoreLabel.textContent = `Punteggio (${gps} game, TB sul ${tbAt}-${tbAt} • es. ${sampleScore})`;
+            if (scoreInput) scoreInput.placeholder = samplePlaceholder;
+
             document.getElementById('match-id').value = match.id;
             document.getElementById('match-stage-type').value = stageType;
             document.getElementById('modal-player1').textContent = match.player1;
@@ -1365,9 +1482,23 @@
             const date = document.getElementById('match-date').value;
             const time = document.getElementById('match-time').value;
             const scoreText = document.getElementById('match-score-string').value.trim();
-            const p1Sets = parseInt(document.getElementById('match-p1-sets').value) || 0;
-            const p2Sets = parseInt(document.getElementById('match-p2-sets').value) || 0;
-            const played = document.getElementById('match-played').checked;
+            let p1Sets = parseInt(document.getElementById('match-p1-sets').value, 10) || 0;
+            let p2Sets = parseInt(document.getElementById('match-p2-sets').value, 10) || 0;
+            let played = document.getElementById('match-played').checked;
+
+            // Se l'utente ha inserito il punteggio testuale ma ha lasciato i set a 0, li calcoliamo automaticamente
+            if (p1Sets === 0 && p2Sets === 0 && scoreText) {
+                const parsed = parseSetsFromScoreString(scoreText);
+                if (parsed) {
+                    p1Sets = parsed.p1Sets;
+                    p2Sets = parsed.p2Sets;
+                }
+            }
+
+            // Se i set mostrano un vincitore chiaro, consideriamo automaticamente la partita conclusa
+            if (p1Sets !== p2Sets && (p1Sets > 0 || p2Sets > 0)) {
+                played = true;
+            }
 
             if (stageType === 'group') {
                 const m = appState.matches.find(item => item.id === matchId);
@@ -1415,7 +1546,7 @@
             saveToStorage();
             closeMatchModal();
             renderApp();
-            showToast('Risultato e incontri aggiornati con successo!', 'success');
+            showToast('Risultato e classifica aggiornati con successo!', 'success');
         }
 
         function updatePlayoffProgression() {
@@ -1446,11 +1577,9 @@
             const p1B = standingsB[0] ? standingsB[0].name : '1° Girone B';
             const p2B = standingsB[1] ? standingsB[1].name : '2° Girone B';
 
-            // Semifinale 1: 1° Girone A vs 2° Girone B
             appState.playoffs.semifinals[0].player1 = p1A;
             appState.playoffs.semifinals[0].player2 = p2B;
 
-            // Semifinale 2: 1° Girone B vs 2° Girone A
             appState.playoffs.semifinals[1].player1 = p1B;
             appState.playoffs.semifinals[1].player2 = p2A;
 
@@ -1460,7 +1589,7 @@
             showToast('Semifinali generate con successo dai primi 2 classificati dei gironi!', 'success');
         }
 
-        // Admin Tournament Generator
+        // Admin Tournament Generator (Includes Games per Set configuration)
         function generateNewTournamentStructure(event) {
             event.preventDefault();
             if (appState.currentUserRole !== 'amministratore') return;
@@ -1468,8 +1597,11 @@
             const name = document.getElementById('admin-tournament-name').value;
             const numPlayers = parseInt(document.getElementById('admin-num-players').value);
             const numGroups = parseInt(document.getElementById('admin-num-groups').value);
+            const gamesPerSet = parseInt(document.getElementById('admin-games-per-set').value) || 4;
 
             appState.tournamentName = name;
+            appState.gamesPerSet = gamesPerSet;
+            appState.rulesText = buildDefaultRulesText(gamesPerSet);
             appState.players = [];
 
             const firstNames = ['Marco', 'Luca', 'Giovanni', 'Alessandro', 'Matteo', 'Davide', 'Simone', 'Federico', 'Andrea', 'Stefano', 'Paolo', 'Lorenzo', 'Francesco', 'Riccardo', 'Gabriele', 'Filippo'];
@@ -1527,7 +1659,8 @@
 
             saveToStorage();
             renderApp();
-            showToast('Nuovo torneo generato con successo!', 'success');
+            const tbScore = Math.max(1, gamesPerSet - 1);
+            showToast(`Torneo generato (${gamesPerSet} game/set, TB sul ${tbScore}-${tbScore})!`, 'success');
         }
 
         function updatePlayerName(playerId, newNameRaw) {
@@ -2038,14 +2171,16 @@
         // View 4: Regolamento & Copyright
         function renderRegolamentoView() {
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
+            const gps = parseInt(appState.gamesPerSet, 10) || 4;
+            const tbAt = Math.max(1, gps - 1);
             return `
                 <div class="space-y-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                         <div class="flex items-center space-x-3 border-b border-slate-100 pb-3.5">
                             <img src="${activeLogo}" alt="Logo" class="w-11 h-11 rounded-full object-cover border border-slate-200 shadow-xs">
-                            <div>
-                                <h2 class="text-sm font-extrabold text-slate-800">${appState.tournamentName}</h2>
-                                <p class="text-[11px] text-slate-500 font-medium">Regolamento Ufficiale & Norme di Gioco</p>
+                            <div class="flex-1 min-w-0">
+                                <h2 class="text-sm font-extrabold text-slate-800 truncate">${appState.tournamentName}</h2>
+                                <p class="text-[11px] text-slate-500 font-medium">Set ai ${gps} game • Tie-break sul ${tbAt}-${tbAt}</p>
                             </div>
                         </div>
                         <div class="text-xs text-slate-700 leading-relaxed whitespace-pre-line font-medium">
@@ -2066,6 +2201,7 @@
             const activeLogo = appState.customLogo || PRESET_LOGOS.rackets;
             const currentScale = appState.iconScale || 0.72;
             const previewSrc = generatedAppIconPng || activeLogo;
+            const currentGamesPerSet = parseInt(appState.gamesPerSet, 10) || 4;
 
             return `
                 <div class="space-y-5">
@@ -2220,6 +2356,14 @@
                                         <option value="4">4 Gironi (A, B, C, D)</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Numero Game per Set (Formula)</label>
+                                <select id="admin-games-per-set" class="w-full text-xs p-3 rounded-xl border border-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-tennis-500">
+                                    <option value="4" ${currentGamesPerSet === 4 ? 'selected' : ''}>4 Game per Set (Tie-break sul 3 pari)</option>
+                                    <option value="6" ${currentGamesPerSet === 6 ? 'selected' : ''}>6 Game per Set (Tie-break sul 5 pari)</option>
+                                    <option value="9" ${currentGamesPerSet === 9 ? 'selected' : ''}>9 Game - Long Set (Tie-break sull'8 pari)</option>
+                                </select>
                             </div>
                             <button type="submit" class="w-full bg-tennis-600 hover:bg-tennis-700 text-white font-bold text-xs py-3 rounded-xl shadow transition">
                                 Genera Gironi e Calendario
